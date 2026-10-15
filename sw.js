@@ -1,6 +1,6 @@
 /* BukuKira service worker
  * Tukar nombor VERSION setiap kali anda mengemas kini fail aplikasi supaya pengguna dapat versi terkini. */
-const VERSION = 'bukukira-v1';
+const VERSION = 'bukukira-v2';
 const SHELL = [
   './',
   './index.html',

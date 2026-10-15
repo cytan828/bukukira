@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#059669">
+    <meta name="description" content="Buku rekod duit masuk &amp; duit keluar dengan Penyata Kewangan akhir tahun automatik.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BukuKira">
+    <!-- PWA: manifest + icons (all paths are relative so it works on GitHub Pages sub-folders) -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>BukuKira - Akaun Bisnes Mudah</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- html2pdf.js for Direct PDF Statement Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        /* Hide scrollbars for clean mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Print Styles for Year-End Financial Statements */
+        @media print {
+            body {
+                background-color: #ffffff;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                max-width: 100% !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+        }
+        .active-scale:active {
+            transform: scale(0.97);
+        }
+        /* Fallback: keep hidden panels/modals hidden even if the Tailwind CDN fails to load */
+        .hidden { display: none !important; }
+        @media print { .print-only { display: block !important; } }
+        /* Keep header clear of the phone notch / status bar when installed */
+        header.sticky { padding-top: calc(1.25rem + env(safe-area-inset-top, 0px)); }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-emerald-500 selection:text-white">
+
+    <!-- Main App Container (Mobile First, Centered on Desktop) -->
+    <div class="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative print-container border-x border-slate-200">
+        
+        <!-- Top Header Bar -->
+        <header class="bg-emerald-700 text-white pt-5 pb-4 px-5 sticky top-0 z-30 shadow-md no-print">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center text-white font-bold text-xl shadow-inner border border-white/20">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 cursor-pointer" onclick="openSettingsModal()">
+                            <h1 id="headerBizName" class="font-extrabold text-lg leading-tight tracking-tight">Kedai Kopi Maju</h1>
+                            <i class="fa-solid fa-pen text-xs text-emerald-200"></i>
+                        </div>
+                        <p class="text-xs text-emerald-100 font-medium flex items-center gap-1.5 mt-0.5">
+                            <span id="sheetStatusDot" class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                            <span id="headerOwnerName">Ahmad bin Ali</span> • <span id="headerYear">2026</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="openSheetsModal()" title="Simpan ke Google Sheets" class="bg-emerald-800/80 hover:bg-emerald-900 active-scale text-xs font-bold px-2.5 py-2.5 rounded-xl border border-emerald-500/40 flex items-center gap-1.5 shadow-sm transition">
+                        <i class="fa-solid fa-table text-emerald-300 text-sm"></i>
+                        <span class="hidden sm:inline">Sheets</span>
+                    </button>
+                    <button onclick="openPWAInfoModal()" title="Pasang di Telefon" class="bg-emerald-800/80 hover:bg-emerald-900 active-scale text-xs font-bold px-2.5 py-2.5 rounded-xl border border-emerald-500/40 flex items-center gap-1.5 shadow-sm transition">
+                        <i class="fa-solid fa-mobile-screen-button text-emerald-300 text-sm"></i>
+                    </button>
+                    <button onclick="openSettingsModal()" title="Tetapan Kedai & Pemilik" class="bg-emerald-800/80 hover:bg-emerald-900 active-scale text-xs font-bold px-2.5 py-2.5 rounded-xl border border-emerald-500/40 flex items-center gap-1.5 shadow-sm transition">
+                        <i class="fa-solid fa-gear text-emerald-200 text-sm"></i>
+                        <span>Tetapan</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Toast Feedback Banner -->
+        <div id="toastBanner" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-sm w-11/12 bg-slate-900 text-white px-4 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-700 transition-all">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+            <span id="toastMessage" class="text-sm font-semibold flex-1">Berjaya disimpan!</span>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 pb-28 px-4 pt-4 overflow-y-auto no-scrollbar">
+
+            <!-- VIEW 1: HOME (SIMPLE RECORDING & SUMMARY) -->
+            <section id="view-home" class="space-y-5">
+                
+                <!-- Google Sheets Live Connection Pill -->
+                <div onclick="openSheetsModal()" class="cursor-pointer bg-white border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs hover:bg-emerald-50/40 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-lg">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </div>
+                        <div class="text-xs">
+                            <span id="homeSheetBannerTitle" class="font-extrabold text-slate-900 block">Simpan ke Google Sheets Anda</span>
+                            <span id="homeSheetBannerSub" class="text-slate-500">Tekan sini untuk sambung Google Sheet atau muat turun fail Excel/CSV</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+                </div>
+
+                <!-- Giant Primary Action Buttons -->
+                <div class="grid grid-cols-2 gap-3.5">
+                    <button onclick="openRecordModal('IN')" class="active-scale bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white p-5 rounded-3xl shadow-lg shadow-emerald-600/20 flex flex-col items-center justify-center text-center border-b-4 border-emerald-800 transition">
+                        <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mb-2.5 shadow-inner">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <span class="font-extrabold text-xl tracking-tight">DUIT MASUK</span>
+                        <span class="text-xs text-emerald-100 font-medium mt-1">Jualan & Hasil</span>
+                    </button>
+
+                    <button onclick="openRecordModal('OUT')" class="active-scale bg-gradient-to-b from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white p-5 rounded-3xl shadow-lg shadow-rose-600/20 flex flex-col items-center justify-center text-center border-b-4 border-rose-800 transition">
+                        <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mb-2.5 shadow-inner">
+                            <i class="fa-solid fa-minus"></i>
+                        </div>
+                        <span class="font-extrabold text-xl tracking-tight">DUIT KELUAR</span>
+                        <span class="text-xs text-rose-100 font-medium mt-1">Belanja, Stok & Bil</span>
+                    </button>
+                </div>
+
+                <!-- Where Is My Money Right Now? (Plain Malay Cash + Bank Box) -->
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Jumlah Duit Bisnes Sekarang</h2>
+                            <p id="homeTotalMoney" class="text-3xl font-extrabold text-slate-900 mt-0.5">RM 0.00</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60">
+                            <div class="flex items-center gap-2 text-slate-500 text-xs font-bold mb-1">
+                                <i class="fa-solid fa-money-bill-wave text-emerald-600"></i>
+                                <span>Tunai di Tangan</span>
+                            </div>
+                            <p id="homeCashBalance" class="font-extrabold text-base text-slate-800">RM 0.00</p>
+                        </div>
+                        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60">
+                            <div class="flex items-center gap-2 text-slate-500 text-xs font-bold mb-1">
+                                <i class="fa-solid fa-building-columns text-blue-600"></i>
+                                <span>Bank / QR Pay</span>
+                            </div>
+                            <p id="homeBankBalance" class="font-extrabold text-base text-slate-800">RM 0.00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This Year's Profit Summary Box -->
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Untung Bisnes Tahun <span class="yearLabel">2026</span></h2>
+                        <button onclick="switchTab('reports')" class="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1">
+                            Lihat Penyata Penuh <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <div class="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-3">
+                            <span class="text-[11px] font-bold text-emerald-800 block">Jumlah Jualan</span>
+                            <span id="homeTotalSales" class="text-sm font-extrabold text-emerald-700 mt-0.5 block">RM 0</span>
+                        </div>
+                        <div class="bg-rose-50/70 border border-rose-200/70 rounded-2xl p-3">
+                            <span class="text-[11px] font-bold text-rose-800 block">Jumlah Kos</span>
+                            <span id="homeTotalExpenses" class="text-sm font-extrabold text-rose-700 mt-0.5 block">RM 0</span>
+                        </div>
+                        <div id="homeProfitCard" class="bg-blue-50 border border-blue-200 rounded-2xl p-3">
+                            <span class="text-[11px] font-bold text-blue-900 block">Untung Bersih</span>
+                            <span id="homeNetProfit" class="text-sm font-extrabold text-blue-700 mt-0.5 block">RM 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Entries Preview -->
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-extrabold text-slate-800">Rekod Terkini</h2>
+                        <button onclick="switchTab('history')" class="text-xs font-bold text-emerald-700 hover:underline">
+                            Lihat Semua (<span id="homeTxCount">0</span>)
+                        </button>
+                    </div>
+                    <div id="homeRecentList" class="space-y-2.5">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: HISTORY LOG (DAILY RECORDS) -->
+            <section id="view-history" class="space-y-4 hidden">
+                <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-extrabold text-lg text-slate-800">Buku Rekod Harian</h2>
+                        <button onclick="openRecordModal('IN')" class="bg-emerald-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm active-scale">
+                            + Tambah Rekod
+                        </button>
+                    </div>
+
+                    <!-- Search & Filter Bar -->
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input id="historySearch" oninput="renderHistoryList()" type="text" placeholder="Cari nota atau kategori..." class="w-full pl-10 pr-4 py-3 bg-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+                        <button onclick="setHistoryFilter('ALL')" id="filter-ALL" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white shrink-0">Semua Rekod</button>
+                        <button onclick="setHistoryFilter('IN')" id="filter-IN" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 shrink-0">Duit Masuk (+)</button>
+                        <button onclick="setHistoryFilter('OUT')" id="filter-OUT" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 shrink-0">Duit Keluar (-)</button>
+                    </div>
+                </div>
+
+                <!-- Transaction List Container -->
+                <div id="historyListContainer" class="space-y-2.5">
+                    <!-- Dynamically populated -->
+                </div>
+            </section>
+
+            <!-- VIEW 3: YEAR-END FINANCIAL STATEMENTS (AUTO GENERATED) -->
+            <section id="view-reports" class="space-y-5 hidden">
+                
+                <!-- Explainer & Actions Card (Hidden on Print) -->
+                <div class="bg-emerald-900 text-white rounded-3xl p-5 shadow-md space-y-3 no-print">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span class="inline-block bg-emerald-700 text-emerald-200 text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-lg mb-1">
+                                Penyata Kewangan Akhir Tahun Automatik
+                            </span>
+                            <h2 class="text-lg font-extrabold leading-snug">Sedia Untuk LHDN, Pinjaman Bank, atau SSM</h2>
+                            <p class="text-xs text-emerald-100 mt-1 leading-relaxed">
+                                Catatan harian anda telah ditukar menjadi penyata akaun rasmi secara automatik.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Year-End Stock Box (Simple Plain-Malay Helper) -->
+                    <div class="bg-white/10 rounded-2xl p-3.5 border border-white/15 flex items-center justify-between gap-3">
+                        <div class="text-xs">
+                            <span class="font-bold block text-emerald-200">Baki Stok Belum Terjual (Akhir Tahun):</span>
+                            <span class="text-white/80">Jika masih ada baki barang niaga di rak pada akhir tahun, masukkan nilainya di sini:</span>
+                        </div>
+                        <button onclick="openClosingStockModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold text-xs px-3.5 py-2.5 rounded-xl shrink-0 active-scale shadow">
+                            <span id="closingStockBtnText">RM 0</span> <i class="fa-solid fa-pen ml-1"></i>
+                        </button>
+                    </div>
+
+                    <!-- Print / Export Buttons -->
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <button id="downloadPdfBtn" onclick="downloadYearEndPDF()" class="bg-white text-emerald-900 font-extrabold text-xs py-3 px-3 rounded-2xl shadow flex items-center justify-center gap-1.5 active-scale">
+                            <i class="fa-solid fa-file-pdf text-rose-600 text-sm"></i>
+                            <span>Simpan PDF</span>
+                        </button>
+                        <button onclick="downloadCSVForSheets()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-3 px-3 rounded-2xl border border-emerald-400 flex items-center justify-center gap-1.5 active-scale">
+                            <i class="fa-solid fa-table text-sm"></i>
+                            <span>Fail Excel/CSV</span>
+                        </button>
+                        <button onclick="copySummaryToClipboard()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold text-xs py-3 px-3 rounded-2xl border border-emerald-500 flex items-center justify-center gap-1.5 active-scale">
+                            <i class="fa-solid fa-share-nodes text-sm"></i>
+                            <span>WhatsApp</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statement Selector Tabs (No Print) -->
+                <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1.5 rounded-2xl no-print">
+                    <button onclick="switchReportSubTab('pnl')" id="subtab-pnl" class="py-2.5 px-3 rounded-xl font-extrabold text-xs bg-white text-slate-900 shadow-sm transition">
+                        1. Untung Rugi
+                        <span class="block text-[10px] font-medium text-slate-500">Kiraan Untung Bisnes</span>
+                    </button>
+                    <button onclick="switchReportSubTab('bs')" id="subtab-bs" class="py-2.5 px-3 rounded-xl font-extrabold text-xs text-slate-600 transition">
+                        2. Kunci Kira-Kira
+                        <span class="block text-[10px] font-medium text-slate-500">Harta & Hutang Bisnes</span>
+                    </button>
+                </div>
+
+                <!-- STATEMENT 1: INCOME STATEMENT (PROFIT & LOSS) -->
+                <div id="statement-pnl" class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4">
+                    <div class="border-b-2 border-slate-800 pb-3 text-center space-y-0.5">
+                        <h3 id="pnlBizName" class="font-extrabold text-lg uppercase tracking-wide text-slate-900">KEDAI KOPI MAJU</h3>
+                        <p id="pnlBizMeta" class="text-[11px] font-semibold text-slate-500">No. Pendaftaran: SSM-202601001234 • No. 12, Jalan Besar, Pekan</p>
+                        <p id="pnlOwnerMeta" class="text-[11px] font-medium text-slate-500 pb-1">Pemilik: Ahmad bin Ali (No. KP: 850214-02-5431)</p>
+                        <p class="text-sm font-extrabold text-slate-800 pt-1 border-t border-slate-100">PENYATA PENDAPATAN (UNTUNG & RUGI)</p>
+                        <p class="text-xs text-slate-500">Bagi Tahun Kewangan Berakhir 31 Disember <span class="yearLabel">2026</span></p>
+                    </div>
+
+                    <!-- Plain Malay Explainer Badge -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-xs text-emerald-900 flex items-center gap-2.5 no-print">
+                        <i class="fa-solid fa-circle-info text-emerald-600 text-base"></i>
+                        <span><b>Penerangan Mudah:</b> Penyata ini menunjukkan semua jualan anda ditolak dengan kos barang dan belanja kedai sepanjang tahun.</span>
+                    </div>
+
+                    <div class="space-y-4 text-sm">
+                        <!-- Revenue Section -->
+                        <div>
+                            <div class="flex justify-between items-center font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl">
+                                <span>1. JUALAN / HASIL PERNIAGAAN</span>
+                                <span id="pnlTotalRevenue">RM 0.00</span>
+                            </div>
+                            <div id="pnlRevenueBreakdown" class="px-3 pt-2 space-y-1.5 text-xs text-slate-600">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Cost of Goods Sold -->
+                        <div>
+                            <div class="flex justify-between items-center font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl">
+                                <span>2. KOS JUALAN (STOK BARANG NIAGA)</span>
+                                <span id="pnlNetCOGS">RM 0.00</span>
+                            </div>
+                            <div class="px-3 pt-2 space-y-1.5 text-xs text-slate-600">
+                                <div class="flex justify-between">
+                                    <span>Belian Stok & Bahan Mentah</span>
+                                    <span id="pnlPurchases" class="font-semibold">RM 0.00</span>
+                                </div>
+                                <div class="flex justify-between text-emerald-700">
+                                    <span>Tolak: Baki Stok Akhir Tahun</span>
+                                    <span id="pnlClosingStock" class="font-semibold">(RM 0.00)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gross Profit Line -->
+                        <div class="border-y-2 border-slate-200 py-2.5 px-3 flex justify-between items-center bg-slate-50 rounded-xl">
+                            <div>
+                                <span class="font-extrabold text-slate-900 block">UNTUNG KASAR</span>
+                                <span class="text-[11px] text-slate-500">Jualan tolak Kos Stok</span>
+                            </div>
+                            <span id="pnlGrossProfit" class="font-extrabold text-base text-slate-900">RM 0.00</span>
+                        </div>
+
+                        <!-- Operating Expenses -->
+                        <div>
+                            <div class="flex justify-between items-center font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl">
+                                <span>3. PERBELANJAAN :</span>
+                                <span id="pnlTotalExpenses">RM 0.00</span>
+                            </div>
+                            <div id="pnlExpenseBreakdown" class="px-3 pt-2 space-y-1.5 text-xs text-slate-600">
+                                <!-- Populated via JS -->
+                            </div>
+                            <div class="mx-3 mt-2 pt-2 border-t border-slate-200 flex justify-between items-center font-extrabold text-xs text-slate-800">
+                                <span>JUMLAH PERBELANJAAN</span>
+                                <span id="pnlTotalExpensesFooter">RM 0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Final Net Profit / Loss Banner -->
+                        <div id="pnlFinalBanner" class="bg-emerald-600 text-white p-4 rounded-2xl flex justify-between items-center shadow-sm">
+                            <div>
+                                <span id="pnlFinalLabel" class="font-extrabold text-base block">UNTUNG BERSIH TAHUN INI</span>
+                                <span class="text-xs text-emerald-100">Lebihan duit selepas tolak semua kos</span>
+                            </div>
+                            <span id="pnlNetProfit" class="font-extrabold text-xl">RM 0.00</span>
+                        </div>
+
+                        <!-- Owner Sign-Off Footer (Great for Print/PDF) -->
+                        <div class="pt-4 border-t border-slate-200 flex items-end justify-between text-[11px] text-slate-500">
+                            <div>
+                                <span class="font-bold text-slate-700 block">Disediakan & Disahkan Oleh Pemilik:</span>
+                                <span id="pnlSignOwnerName" class="font-extrabold text-slate-900 text-xs block mt-0.5">Ahmad bin Ali</span>
+                                <span id="pnlSignOwnerId" class="block">No. KP: 850214-02-5431</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="w-28 border-b border-slate-400 mb-1"></div>
+                                <span>Tandatangan Pemilik</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATEMENT 2: BALANCE SHEET (STATEMENT OF FINANCIAL POSITION) -->
+        <div id="statement-bs" class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4 hidden print-only">
+            <div class="border-b-2 border-slate-800 pb-3 text-center space-y-0.5">
+                <h3 id="bsBizName" class="font-extrabold text-lg uppercase tracking-wide text-slate-900">KEDAI KOPI MAJU</h3>
+                <p id="bsBizMeta" class="text-[11px] font-semibold text-slate-500">No. Pendaftaran: SSM-202601001234 • No. 12, Jalan Besar, Pekan</p>
+                <p id="bsOwnerMeta" class="text-[11px] font-medium text-slate-500 pb-1">Pemilik: Ahmad bin Ali (No. KP: 850214-02-5431)</p>
+                <p class="text-sm font-extrabold text-slate-800 pt-1 border-t border-slate-100">KUNCI KIRA-KIRA (PENYATA KEDUDUKAN KEWANGAN)</p>
+                <p class="text-xs text-slate-500">Pada 31 Disember <span class="yearLabel">2026</span></p>
+            </div>
+
+            <!-- Plain Malay Explainer Badge -->
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-900 flex items-center gap-2.5 no-print">
+                <i class="fa-solid fa-scale-balanced text-blue-600 text-base"></i>
+                <span><b>Penerangan Mudah:</b> Susunan Kunci Kira-Kira mengikut format rasmi standard perakaunan (Aset Bukan Semasa, Aset Semasa, Liabiliti, dan Ekuiti Pemilik).</span>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <!-- Susunan Kunci Kira-Kira (mengikut format rasmi) -->
+
+                <!-- ASET BUKAN SEMASA -->
+                <div>
+                    <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
+                        <span>ASET BUKAN SEMASA :</span>
+                    </div>
+                    <div class="px-3 pt-2 space-y-1.5 text-xs text-slate-700">
+                        <div class="flex justify-between items-center">
+                            <span>Tanah dan bangunan</span>
+                            <span id="bsLandBuilding" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Loji dan jentera</span>
+                            <span id="bsEquipment" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Kenderaan</span>
+                            <span id="bsVehicles" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Aset bukan semasa lain</span>
+                            <span id="bsOtherNonCurrent" class="font-bold">RM 0.00</span>
+                        </div>
+                    </div>
+                    <div class="mx-3 mt-2 pt-1.5 border-t border-slate-300 flex justify-between items-center font-extrabold text-xs text-slate-900">
+                        <span>JUMLAH ASET BUKAN SEMASA :</span>
+                        <span id="bsTotalNonCurrentAssetsFooter">RM 0.00</span>
+                    </div>
+                    <div class="px-3 pt-2 space-y-1.5 text-xs text-slate-700">
+                        <div class="flex justify-between items-center">
+                            <span>Pelaburan</span>
+                            <span id="bsInvestments" class="font-bold">RM 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASET SEMASA -->
+                <div>
+                    <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
+                        <span>ASET SEMASA :</span>
+                    </div>
+                    <div class="px-3 pt-2 space-y-1.5 text-xs text-slate-700">
+                        <div class="flex justify-between items-center">
+                            <span>Inventori</span>
+                            <span id="bsStock" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Penghutang perdagangan</span>
+                            <span id="bsTradeDebtors" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Penghutang lain</span>
+                            <span id="bsOtherDebtors" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Baki tunai</span>
+                            <span id="bsCash" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Baki dalam bank</span>
+                            <span id="bsBank" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Aset semasa lain</span>
+                            <span id="bsOtherCurrent" class="font-bold">RM 0.00</span>
+                        </div>
+                    </div>
+                    <div class="mx-3 mt-2 pt-1.5 border-t border-slate-300 flex justify-between items-center font-extrabold text-xs text-slate-900">
+                        <span>JUMLAH ASET SEMASA</span>
+                        <span id="bsTotalCurrentAssetsFooter">RM 0.00</span>
+                    </div>
+                </div>
+
+                <!-- JUMLAH ASET -->
+                <div class="border-y-2 border-slate-900 py-2 px-3 flex justify-between items-center bg-slate-50 rounded-xl">
+                    <span class="font-extrabold text-xs text-slate-950">JUMLAH ASET</span>
+                    <span id="bsTotalAssets" class="font-extrabold text-sm text-slate-950">RM 0.00</span>
+                </div>
+
+                <!-- LIABILITI -->
+                <div>
+                    <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
+                        <span>LIABILITI :</span>
+                    </div>
+                    <div class="px-3 pt-2 space-y-1.5 text-xs text-slate-700">
+                        <div class="flex justify-between items-center">
+                            <span>Pinjaman dan overdraf</span>
+                            <span id="bsLoans" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Pemiutang dagangan</span>
+                            <span id="bsTradeCreditors" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Pemiutang lain</span>
+                            <span id="bsOtherCreditors" class="font-bold">RM 0.00</span>
+                        </div>
+                    </div>
+                    <div class="mx-3 mt-2 pt-1.5 border-t border-slate-300 flex justify-between items-center font-extrabold text-xs text-slate-900">
+                        <span>JUMLAH LIABILITI</span>
+                        <span id="bsTotalLiabilitiesFooter">RM 0.00</span>
+                    </div>
+                </div>
+
+                <!-- EKUITI PEMILIK -->
+                <div>
+                    <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
+                        <span>EKUITI PEMILIK :</span>
+                    </div>
+                    <div class="px-3 pt-2 space-y-1.5 text-xs text-slate-700">
+                        <div class="flex justify-between items-center">
+                            <span>Akaun modal</span>
+                            <span id="bsCapital" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Baki akaun semasa bawa hadapan</span>
+                            <span id="bsBroughtForward" class="font-bold">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Untung/rugi tahun semasa</span>
+                            <span id="bsNetProfit" class="font-bold text-emerald-700">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-rose-700">
+                            <span>Ambilan/pendahuluan (bersih)</span>
+                            <span id="bsDrawings" class="font-bold">(RM 0.00)</span>
+                        </div>
+                    </div>
+                    <div class="mx-3 mt-2 pt-1.5 border-t border-slate-300 flex justify-between items-center font-extrabold text-xs text-slate-900">
+                        <span>JUMLAH EKUITI PEMILIK</span>
+                        <span id="bsTotalEquityFooter">RM 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Balance Verification Check Badge -->
+                <div class="bg-slate-900 text-white p-3.5 rounded-2xl flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+                        <div>
+                            <span class="font-extrabold block">SEMAKAN IMBANGAN AKAUN</span>
+                            <span class="text-slate-300 text-[11px]">Jumlah Aset sama dengan Liabiliti + Ekuiti</span>
+                        </div>
+                    </div>
+                    <span id="bsCheckAmount" class="font-extrabold text-sm text-emerald-400">SEIMBANG</span>
+                </div>
+
+                <!-- Owner Sign-Off Footer -->
+                <div class="pt-4 border-t border-slate-200 flex items-end justify-between text-[11px] text-slate-500">
+                    <div>
+                        <span class="font-bold text-slate-700 block">Disediakan & Disahkan Oleh Pemilik:</span>
+                        <span id="bsSignOwnerName" class="font-extrabold text-slate-900 text-xs block mt-0.5">Ahmad bin Ali</span>
+                        <span id="bsSignOwnerId" class="block">No. KP: 850214-02-5431</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="w-28 border-b border-slate-400 mb-1"></div>
+                        <span>Tandatangan Pemilik</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 1: REKOD DUIT MASUK / KELUAR -->
+        <div id="recordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div id="modalTypeBadge" class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-extrabold"><i class="fa-solid fa-plus"></i></div>
+                        <h3 id="modalTitle" class="font-extrabold text-base text-slate-900">Rekod Duit Masuk (+)</h3>
+                    </div>
+                    <button type="button" onclick="closeRecordModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div>
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">Jumlah Duit</span>
+                    <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 focus-within:ring-2 focus-within:ring-emerald-500">
+                        <span id="modalCurrencyPrefix" class="font-extrabold text-slate-500 text-lg">RM</span>
+                        <input id="txAmountInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" class="w-full bg-transparent text-2xl font-extrabold text-slate-900 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">Pilih Jenis Rekod</span>
+                    <div id="categoryGrid" class="grid grid-cols-2 gap-2"></div>
+                </div>
+
+                <div>
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">Cara Bayaran</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="pay-CASH" onclick="selectPaymentMethod('CASH')" class="p-3.5 rounded-2xl border-2 border-emerald-600 bg-emerald-50/70 text-slate-900 font-extrabold text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-money-bill-wave"></i> Tunai
+                        </button>
+                        <button type="button" id="pay-BANK" onclick="selectPaymentMethod('BANK')" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-building-columns"></i> Bank / QR
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">Tarikh</span>
+                        <input id="txDateInput" type="date" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">Nota (pilihan)</span>
+                        <input id="txNoteInput" type="text" placeholder="cth: Jualan hari ini" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                </div>
+
+                <button type="button" id="saveTxBtn" onclick="saveTransaction()" class="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base shadow-lg active-scale transition">
+                    Simpan Rekod
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL 2: BAKI STOK AKHIR TAHUN -->
+        <div id="closingStockModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="font-extrabold text-base text-slate-900">Baki Stok Akhir Tahun</h3>
+                    <button type="button" onclick="closeClosingStockModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">Masukkan nilai barang niaga yang masih belum terjual pada akhir tahun. Nilai ini menjadi <b>Inventori</b> dalam Kunci Kira-Kira.</p>
+                <input id="closingStockInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xl font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <button type="button" onclick="saveClosingStock()" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg active-scale transition">Simpan Baki Stok</button>
+            </div>
+        </div>
+
+        <!-- MODAL 3: TETAPAN KEDAI & PEMILIK -->
+        <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="font-extrabold text-base text-slate-900">Tetapan Kedai & Pemilik</h3>
+                    <button type="button" onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">Nama Perniagaan</span>
+                        <input id="settingBizName" type="text" placeholder="cth: Kedai Kopi Maju" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">No. Pendaftaran (SSM)</span>
+                        <input id="settingBizRegNo" type="text" placeholder="cth: SSM-202601001234" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">Jenis Perniagaan</span>
+                        <input id="settingBizType" type="text" placeholder="cth: Gerai Makanan & Minuman" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">Alamat Perniagaan</span>
+                        <input id="settingBizAddress" type="text" placeholder="No., Jalan, Bandar" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">Nama Pemilik</span>
+                        <input id="settingOwnerName" type="text" placeholder="Nama penuh" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">No. Kad Pengenalan Pemilik</span>
+                        <input id="settingOwnerId" type="text" placeholder="cth: 850214-02-5431" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">No. Telefon</span>
+                        <input id="settingOwnerPhone" type="tel" placeholder="cth: 012-345 6789" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">Emel</span>
+                        <input id="settingOwnerEmail" type="email" placeholder="nama@emel.com" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </label>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="block">
+                            <span class="text-[11px] font-bold text-slate-600 block mb-1">Mata Wang</span>
+                            <select id="settingCurrency" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="RM">RM (Ringgit)</option>
+                                <option value="SGD">SGD</option>
+                                <option value="USD">USD</option>
+                                <option value="Rp">Rp</option>
+                            </select>
+                        </label>
+                        <label class="block">
+                            <span class="text-[11px] font-bold text-slate-600 block mb-1">Tahun Kewangan</span>
+                            <input id="settingYear" type="number" inputmode="numeric" min="2000" max="2100" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </label>
+                    </div>
+                </div>
+                <button type="button" onclick="saveSettings()" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg active-scale transition">Simpan Tetapan</button>
+                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="if (confirm('Pulihkan data contoh? Semua rekod semasa akan diganti.')) { closeSettingsModal(); loadSampleBusinessData(); }" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">Guna Data Contoh</button>
+                    <button type="button" onclick="if (confirm('Padam SEMUA rekod? Tindakan ini tidak boleh diundur.')) clearAllBusinessData()" class="py-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs">Padam Semua Rekod</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 4: INSTALL AS MOBILE PWA GUIDE -->
+        <div id="pwaModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-base text-slate-900">Pasang Aplikasi di Telefon</h3>
+                            <p class="text-xs text-slate-500">Guna seperti aplikasi penuh, boleh digunakan tanpa internet</p>
+                        </div>
+                    </div>
+                    <button onclick="closePWAInfoModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Butang pasang asal (muncul automatik di Chrome / Edge / Samsung Internet) -->
+                <button id="nativeInstallBtn" onclick="triggerNativeInstall()" class="hidden w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 active-scale">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Pasang Aplikasi ke Skrin Utama Sekarang</span>
+                </button>
+
+                <div class="flex flex-col gap-2.5 text-xs text-slate-700">
+                    <div id="androidInstallBox" class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                        <span class="font-extrabold text-slate-900 block mb-1"><i class="fa-brands fa-android text-emerald-600 mr-1"></i> Pengguna Telefon Android (Chrome):</span>
+                        1. Buka pautan aplikasi dalam <b>Chrome</b>.<br>
+                        2. Tekan <b>Menu 3 Titik</b> <i class="fa-solid fa-ellipsis-vertical"></i> &rarr; <b>"Install app" / "Add to Home screen"</b>.
+                    </div>
+                    <div id="iosInstallBox" class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                        <span class="font-extrabold text-slate-900 block mb-1"><i class="fa-brands fa-apple mr-1"></i> Pengguna iPhone / iPad (Safari):</span>
+                        1. Buka pautan aplikasi dalam <b>Safari</b>.<br>
+                        2. Tekan butang <b>Share (Kongsi)</b> <i class="fa-solid fa-arrow-up-from-bracket text-blue-600"></i> &rarr; <b>"Add to Home Screen"</b>.
+                    </div>
+                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-[11px] text-emerald-900 leading-relaxed">
+                        <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i>
+                        Semua rekod disimpan di dalam telefon anda sendiri. Gunakan <b>Fail Excel/CSV</b> atau <b>Google Sheets</b> untuk membuat salinan sandaran.
+                    </div>
+                </div>
+
+                <button onclick="closePWAInfoModal()" class="w-full py-3 rounded-2xl bg-slate-900 text-white font-bold text-xs">
+                    Faham & Tutup
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL 5: GOOGLE SHEETS AUTO-SYNC & EXPORT MODAL -->
+        <div id="sheetsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-table"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-base text-slate-900">Simpan ke Google Sheets</h3>
+                            <p id="sheetStatusText" class="text-xs text-slate-500">Sambung atau muat turun fail Excel/CSV</p>
+                        </div>
+                    </div>
+                    <button onclick="closeSheetsModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Option 1: 1-Tap CSV / Excel Download -->
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold text-emerald-950">Cara 1: Muat Turun Terus (Tanpa Setup)</span>
+                        <span class="text-[10px] font-bold bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-md">Paling Mudah</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-800 leading-relaxed">
+                        Muat turun fail jadual lengkap mengandungi semua rekod harian, Penyata Untung Rugi & Kunci Kira-Kira untuk dibuka dalam Google Sheets atau Excel.
+                    </p>
+                    <button onclick="downloadCSVForSheets()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow flex items-center justify-center gap-2 active-scale transition">
+                        <i class="fa-solid fa-file-csv text-sm"></i>
+                        <span>Muat Turun Fail Jadual (.CSV) Sekarang</span>
+                    </button>
+                </div>
+
+                <!-- Option 2: Live Google Sheets Webhook Auto-Sync -->
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold text-slate-900">Cara 2: Auto-Simpan ke Google Sheet Anda</span>
+                        <span id="modalSyncBadge" class="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">Belum Disambung</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">
+                        Tampal URL Web App Google Sheet anda di bawah supaya setiap rekod disimpan secara automatik ke Google Drive anda.
+                    </p>
+                    <input id="sheetWebhookInput" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="syncNowBtn" onclick="saveAndSyncGoogleSheet()" class="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 active-scale">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Simpan & Hantar
+                        </button>
+                        <button id="pullSheetBtn" onclick="pullFromGoogleSheet()" class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-extrabold text-xs flex items-center justify-center gap-1.5 active-scale">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Tarik Data Sheet
+                        </button>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between">
+                        <span class="text-[11px] text-slate-500 font-semibold">Perlukan kod Google Apps Script?</span>
+                        <button onclick="copyAppsScriptCode()" class="text-[11px] font-extrabold text-emerald-700 hover:underline flex items-center gap-1">
+                            <i class="fa-regular fa-copy"></i> Salin Kod Skrip
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- APPLICATION LOGIC -->
+    <script>
+        const OFFICIAL_EXPENSE_LABELS = [
+            'Faedah pinjaman',
+            'Gaji dan upah',
+            'Sewa/pajakan',
+            'Kontrak dan subkontrak',
+            'Komisen',
+            'Hutang lapuk',
+            'Perjalanan dan pengangkutan',
+            'Pembaikan dan penyelenggaraan',
+            'Promosi dan iklan',
+            'Perbelanjaan-perbelanjaan lain'
+        ];
+
+        const CATEGORIES = {
+            IN: [
+                {
+                    id: 'sales_goods',
+                    label: 'Jualan Pelanggan',
+                    sub: 'Jual makanan, barang atau produk',
+                    icon: 'fa-cash-register',
+                    color: 'emerald',
+                    statement: 'PNL_REVENUE'
+                },
+                {
+                    id: 'sales_service',
+                    label: 'Upah Servis / Kerja',
+                    sub: 'Baiki barang, penghantaran, tempahan',
+                    icon: 'fa-handshake-simple',
+                    color: 'teal',
+                    statement: 'PNL_REVENUE'
+                },
+                {
+                    id: 'owner_capital',
+                    label: 'Modal Duit Sendiri',
+                    sub: 'Duit pemilik masuk dalam bisnes',
+                    icon: 'fa-piggy-bank',
+                    color: 'blue',
+                    statement: 'BS_EQUITY_ADD'
+                },
+                {
+                    id: 'loan_received',
+                    label: 'Pinjaman Bisnes Masuk',
+                    sub: 'Pinjam dari bank / agensi / keluarga',
+                    icon: 'fa-hand-holding-dollar',
+                    color: 'indigo',
+                    statement: 'BS_LIABILITY_ADD'
+                }
+            ],
+            OUT: [
+                // 1. Kos Jualan (Stok Barang Niaga)
+                {
+                    id: 'buy_stock',
+                    label: 'Beli Stok / Bahan Mentah',
+                    sub: 'Barang niaga & bahan untuk dijual',
+                    icon: 'fa-boxes-stacked',
+                    color: 'amber',
+                    statement: 'PNL_COGS',
+                    groupTitle: 'Kos Barang Niaga (Stok)'
+                },
+                // 2. Senarai Rasmi PERBELANJAAN (Ikut Format LHDN / Penyata)
+                {
+                    id: 'exp_loan_interest',
+                    label: 'Faedah pinjaman',
+                    sub: 'Caj faedah / bunga pinjaman bank',
+                    icon: 'fa-percent',
+                    color: 'rose',
+                    statement: 'PNL_EXPENSE',
+                    groupTitle: 'Perbelanjaan Operasi'
+                },
+                {
+                    id: 'staff_wages',
+                    label: 'Gaji dan upah',
+                    sub: 'Gaji pekerja, KWSP, PERKESO & elaun',
+                    icon: 'fa-users',
+                    color: 'orange',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'rent_utilities',
+                    label: 'Sewa/pajakan',
+                    sub: 'Sewa kedai, tapak niaga, khemah / mesin',
+                    icon: 'fa-store',
+                    color: 'rose',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'exp_contract',
+                    label: 'Kontrak dan subkontrak',
+                    sub: 'Upah subkontraktor / kerja luar',
+                    icon: 'fa-file-signature',
+                    color: 'indigo',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'exp_commission',
+                    label: 'Komisen',
+                    sub: 'Komisen ejen, dropship atau jurujual',
+                    icon: 'fa-hand-holding-heart',
+                    color: 'teal',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'exp_bad_debt',
+                    label: 'Hutang lapuk',
+                    sub: 'Hutang pelanggan yang tidak dapat dikutip',
+                    icon: 'fa-file-circle-xmark',
+                    color: 'slate',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'transport_fuel',
+                    label: 'Perjalanan dan pengangkutan',
+                    sub: 'Minyak, tol, pos, penghantaran & tambang',
+                    icon: 'fa-truck-fast',
+                    color: 'cyan',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'exp_repair',
+                    label: 'Pembaikan dan penyelenggaraan',
+                    sub: 'Servis mesin, baiki kedai & kenderaan',
+                    icon: 'fa-wrench',
+                    color: 'amber',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'exp_promo',
+                    label: 'Promosi dan iklan',
+                    sub: 'Iklan FB/TikTok, banner, bunting & diskaun',
+                    icon: 'fa-bullhorn',
+                    color: 'pink',
+                    statement: 'PNL_EXPENSE'
+                },
+                {
+                    id: 'exp_others',
+                    label: 'Perbelanjaan-perbelanjaan lain',
+                    sub: 'Bil elektrik, air, internet, plastik & alat tulis',
+                    icon: 'fa-receipt',
+                    color: 'emerald',
+                    statement: 'PNL_EXPENSE'
+                },
+                // 3. Aset, Pinjaman & Ambilan Pemilik (Kunci Kira-Kira)
+                {
+                    id: 'buy_equipment',
+                    label: 'Beli Mesin / Peralatan Kedai',
+                    sub: 'Peti ais, mesin kopi, meja (Harta/Aset)',
+                    icon: 'fa-screwdriver-wrench',
+                    color: 'purple',
+                    statement: 'BS_ASSET_ADD',
+                    groupTitle: 'Harta Kedai, Pinjaman & Pemilik'
+                },
+                {
+                    id: 'owner_drawing',
+                    label: 'Ambil Duit Untuk Sendiri',
+                    sub: 'Kegunaan peribadi / belanja keluarga',
+                    icon: 'fa-user-check',
+                    color: 'pink',
+                    statement: 'BS_EQUITY_DRAW'
+                },
+                {
+                    id: 'loan_repay',
+                    label: 'Bayar Pokok Pinjaman',
+                    sub: 'Bayar balik hutang pokok pinjaman bisnes',
+                    icon: 'fa-building-columns',
+                    color: 'slate',
+                    statement: 'BS_LIABILITY_PAY'
+                }
+            ]
+        };
+
+        // Application State (In-Memory with realistic pre-loaded small shop data in Bahasa Malaysia)
+        let appState = {
+            businessName: 'Kedai Kopi & Roti Maju',
+            businessRegNo: 'SSM-202603104829',
+            businessType: 'Gerai Makanan & Minuman',
+            businessAddress: 'No. 18, Pekan Changlun, 06010 Kedah',
+            ownerName: 'Ahmad bin Ali',
+            ownerIdNumber: '850214-02-5431',
+            ownerPhone: '012-456 7890',
+            ownerEmail: 'ahmad.kopimaju@gmail.com',
+            currency: 'RM',
+            financialYear: '2026',
+            closingStockValue: 650.00,
+            googleSheetWebhookUrl: '',
+            lastSyncedAt: null,
+            currentModalType: 'IN',
+            selectedCategoryId: 'sales_goods',
+            selectedPaymentMethod: 'CASH',
+            historyFilter: 'ALL',
+            transactions: [
+                {
+                    id: 'tx-1',
+                    date: '2026-01-02',
+                    type: 'IN',
+                    categoryId: 'owner_capital',
+                    method: 'BANK',
+                    amount: 5000.00,
+                    note: 'Modal permulaan masuk ke akaun bank kedai'
+                },
+                {
+                    id: 'tx-2',
+                    date: '2026-01-03',
+                    type: 'IN',
+                    categoryId: 'owner_capital',
+                    method: 'CASH',
+                    amount: 1000.00,
+                    note: 'Duit syiling & tunai permulaan dalam laci kedai'
+                },
+                {
+                    id: 'tx-3',
+                    date: '2026-01-05',
+                    type: 'OUT',
+                    categoryId: 'buy_equipment',
+                    method: 'BANK',
+                    amount: 1800.00,
+                    note: 'Beli mesin bancuh kopi & almari pemanas roti'
+                },
+                {
+                    id: 'tx-4',
+                    date: '2026-02-10',
+                    type: 'OUT',
+                    categoryId: 'buy_stock',
+                    method: 'CASH',
+                    amount: 2400.00,
+                    note: 'Beli biji kopi, susu tin, roti, telur & kaya'
+                },
+                {
+                    id: 'tx-5',
+                    date: '2026-03-15',
+                    type: 'IN',
+                    categoryId: 'sales_goods',
+                    method: 'CASH',
+                    amount: 4850.00,
+                    note: 'Jualan tunai pelanggan di kedai'
+                },
+                {
+                    id: 'tx-6',
+                    date: '2026-04-20',
+                    type: 'IN',
+                    categoryId: 'sales_goods',
+                    method: 'BANK',
+                    amount: 3600.00,
+                    note: 'Jualan pelanggan bayar guna DuitNow QR'
+                },
+                {
+                    id: 'tx-7',
+                    date: '2026-06-01',
+                    type: 'OUT',
+                    categoryId: 'rent_utilities',
+                    method: 'BANK',
+                    amount: 1200.00,
+                    note: 'Bayar sewa kedai bulanan'
+                },
+                {
+                    id: 'tx-8',
+                    date: '2026-08-12',
+                    type: 'OUT',
+                    categoryId: 'staff_wages',
+                    method: 'CASH',
+                    amount: 900.00,
+                    note: 'Gaji dan upah pembantu gerai'
+                },
+                {
+                    id: 'tx-9',
+                    date: '2026-08-25',
+                    type: 'OUT',
+                    categoryId: 'exp_others',
+                    method: 'BANK',
+                    amount: 300.00,
+                    note: 'Bil elektrik TNB, air SADA & plastik bungkus'
+                },
+                {
+                    id: 'tx-10',
+                    date: '2026-09-18',
+                    type: 'OUT',
+                    categoryId: 'owner_drawing',
+                    method: 'CASH',
+                    amount: 500.00,
+                    note: 'Ambil tunai untuk beli barang dapur keluarga'
+                }
+            ]
+        };
+
+        // ---- Penyimpanan kekal dalam telefon (localStorage) ----
+        const STORAGE_KEY = 'bukukira-data-v1';
+        const START_WITH_SAMPLE = true; // tukar kepada false jika mahu pengguna baharu bermula dengan buku kosong
+        const DEFAULT_STATE = JSON.parse(JSON.stringify(appState));
+        const TRANSIENT_KEYS = ['currentModalType', 'selectedCategoryId', 'selectedPaymentMethod', 'historyFilter'];
+
+        function saveState() {
+            try {
+                const persist = {};
+                Object.keys(appState).forEach(k => { if (!TRANSIENT_KEYS.includes(k)) persist[k] = appState[k]; });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
+            } catch (e) { /* storan penuh / mod peribadi */ }
+        }
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    Object.keys(saved).forEach(k => { if (!TRANSIENT_KEYS.includes(k)) appState[k] = saved[k]; });
+                } else if (!START_WITH_SAMPLE) {
+                    appState.transactions = [];
+                    appState.closingStockValue = 0;
+                }
+            } catch (e) { /* guna data asal */ }
+        }
+
+        function getCategoryMeta(catId) {
+            const all = [...CATEGORIES.IN, ...CATEGORIES.OUT];
+            return all.find(c => c.id === catId) || all[0];
+        }
+
+        function formatMoney(num) {
+            const val = Number(num) || 0;
+            const sign = val < 0 ? '-' : '';
+            return `${sign}${appState.currency} ${Math.abs(val).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function computeFinancialStatements() {
+            let cashBalance = 0;
+            let bankBalance = 0;
+
+            // P&L buckets
+            let totalRevenue = 0;
+            let revenueByCategory = {};
+
+            let totalPurchasesCOGS = 0;
+
+            let totalOperatingExpenses = 0;
+            let expensesByCategory = {};
+
+            // Balance Sheet buckets
+            let equipmentAsset = 0;
+            let loansLiability = 0;
+            let ownerCapital = 0;
+            let ownerDrawings = 0;
+
+            appState.transactions.forEach(tx => {
+                const amt = Number(tx.amount) || 0;
+                const meta = getCategoryMeta(tx.categoryId);
+
+                // 1. Update Cash or Bank Asset
+                if (tx.type === 'IN') {
+                    if (tx.method === 'CASH') cashBalance += amt;
+                    else bankBalance += amt;
+                } else {
+                    if (tx.method === 'CASH') cashBalance -= amt;
+                    else bankBalance -= amt;
+                }
+
+                // 2. Map to Financial Statement Line Item
+                switch (meta.statement) {
+                    case 'PNL_REVENUE':
+                        totalRevenue += amt;
+                        revenueByCategory[meta.label] = (revenueByCategory[meta.label] || 0) + amt;
+                        break;
+                    case 'PNL_COGS':
+                        totalPurchasesCOGS += amt;
+                        break;
+                    case 'PNL_EXPENSE':
+                        totalOperatingExpenses += amt;
+                        expensesByCategory[meta.label] = (expensesByCategory[meta.label] || 0) + amt;
+                        break;
+                    case 'BS_ASSET_ADD':
+                        equipmentAsset += amt;
+                        break;
+                    case 'BS_LIABILITY_ADD':
+                        loansLiability += amt;
+                        break;
+                    case 'BS_LIABILITY_PAY':
+                        loansLiability -= amt;
+                        break;
+                    case 'BS_EQUITY_ADD':
+                        ownerCapital += amt;
+                        break;
+                    case 'BS_EQUITY_DRAW':
+                        ownerDrawings += amt;
+                        break;
+                }
+            });
+
+            const closingStock = Math.max(0, Number(appState.closingStockValue) || 0);
+            const netCOGS = totalPurchasesCOGS - closingStock;
+            const grossProfit = totalRevenue - netCOGS;
+            const netProfit = grossProfit - totalOperatingExpenses;
+
+            const totalAssets = cashBalance + bankBalance + closingStock + equipmentAsset;
+            const totalEquity = ownerCapital + netProfit - ownerDrawings;
+            const totalLiabilitiesAndEquity = loansLiability + totalEquity;
+
+            return {
+                cashBalance,
+                bankBalance,
+                totalMoneyNow: cashBalance + bankBalance,
+                totalRevenue,
+                revenueByCategory,
+                totalPurchasesCOGS,
+                closingStock,
+                netCOGS,
+                grossProfit,
+                totalOperatingExpenses,
+                expensesByCategory,
+                netProfit,
+                equipmentAsset,
+                loansLiability,
+                ownerCapital,
+                ownerDrawings,
+                totalAssets,
+                totalEquity,
+                totalLiabilitiesAndEquity
+            };
+        }
+
+        function renderAll() {
+            saveState();
+            const stats = computeFinancialStatements();
+
+            // Header Info
+            document.getElementById('headerBizName').textContent = appState.businessName;
+            document.getElementById('headerOwnerName').textContent = appState.ownerName || 'Pemilik Perniagaan';
+            document.getElementById('headerYear').textContent = appState.financialYear;
+            document.querySelectorAll('.yearLabel').forEach(el => el.textContent = appState.financialYear);
+
+            // Google Sheets Connection Status UI
+            updateGoogleSheetStatusUI();
+
+            // Home Cards
+            document.getElementById('homeTotalMoney').textContent = formatMoney(stats.totalMoneyNow);
+            document.getElementById('homeCashBalance').textContent = formatMoney(stats.cashBalance);
+            document.getElementById('homeBankBalance').textContent = formatMoney(stats.bankBalance);
+
+            document.getElementById('homeTotalSales').textContent = formatMoney(stats.totalRevenue);
+            document.getElementById('homeTotalExpenses').textContent = formatMoney(stats.netCOGS + stats.totalOperatingExpenses);
+            document.getElementById('homeNetProfit').textContent = formatMoney(stats.netProfit);
+            document.getElementById('homeTxCount').textContent = appState.transactions.length;
+
+            // Recent Transactions on Home (Top 4)
+            const recentListEl = document.getElementById('homeRecentList');
+            const sortedTx = [...appState.transactions].sort((a, b) => b.date.localeCompare(a.date));
+            if (sortedTx.length === 0) {
+                recentListEl.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-xs">
+                        Tiada rekod lagi. Tekan <b>DUIT MASUK</b> atau <b>DUIT KELUAR</b> di atas!
+                    </div>`;
+            } else {
+                recentListEl.innerHTML = sortedTx.slice(0, 4).map(tx => createTransactionRowHTML(tx, false)).join('');
+            }
+
+            // Render History View
+            renderHistoryList();
+
+            // Render Year-End Financial Statements
+            renderStatements(stats);
+        }
+
+        function createTransactionRowHTML(tx, allowDelete = true) {
+            const meta = getCategoryMeta(tx.categoryId);
+            const isIn = tx.type === 'IN';
+            const badgeColor = isIn ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
+            const amountColor = isIn ? 'text-emerald-700' : 'text-rose-600';
+            const sign = isIn ? '+' : '-';
+            const payBadge = tx.method === 'CASH'
+                ? '<span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md"><i class="fa-solid fa-money-bill-wave mr-1 text-emerald-600"></i>Tunai</span>'
+                : '<span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md"><i class="fa-solid fa-building-columns mr-1 text-blue-600"></i>Bank/QR</span>';
+
+            return `
+                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-xl border ${badgeColor} flex items-center justify-center shrink-0 text-base">
+                            <i class="fa-solid ${meta.icon}"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-extrabold text-xs text-slate-900 truncate">${meta.label}</p>
+                            <p class="text-[11px] text-slate-500 truncate">${tx.note || meta.sub}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[10px] font-semibold text-slate-400">${tx.date}</span>
+                                ${payBadge}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0 flex items-center gap-2">
+                        <span class="font-extrabold text-sm ${amountColor}">${sign}${formatMoney(tx.amount)}</span>
+                        ${allowDelete ? `
+                            <button onclick="deleteTransaction('${tx.id}')" title="Padam Rekod" class="w-7 h-7 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('historyListContainer');
+            const query = (document.getElementById('historySearch')?.value || '').toLowerCase();
+
+            const filtered = [...appState.transactions]
+                .filter(tx => {
+                    if (appState.historyFilter !== 'ALL' && tx.type !== appState.historyFilter) return false;
+                    if (!query) return true;
+                    const meta = getCategoryMeta(tx.categoryId);
+                    return (tx.note || '').toLowerCase().includes(query) || meta.label.toLowerCase().includes(query);
+                })
+                .sort((a, b) => b.date.localeCompare(a.date));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-8 text-center border border-slate-200 text-slate-400 text-sm">
+                        <i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>
+                        Tiada rekod ditemui.
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(tx => createTransactionRowHTML(tx, true)).join('');
+        }
+
+        function renderStatements(stats) {
+            document.getElementById('pnlBizName').textContent = appState.businessName.toUpperCase();
+            document.getElementById('bsBizName').textContent = appState.businessName.toUpperCase();
+
+            // Populate Company Registration, Address & Owner Details on Official Statements
+            const bizMetaParts = [];
+            if (appState.businessRegNo) bizMetaParts.push(`No. Pendaftaran: ${appState.businessRegNo}`);
+            if (appState.businessType) bizMetaParts.push(appState.businessType);
+            if (appState.businessAddress) bizMetaParts.push(appState.businessAddress);
+            const bizMetaText = bizMetaParts.join(' • ') || 'Perniagaan Kecil Berdaftar';
+
+            const ownerMetaParts = [];
+            if (appState.ownerName) ownerMetaParts.push(`Pemilik: ${appState.ownerName}`);
+            if (appState.ownerIdNumber) ownerMetaParts.push(`No. KP: ${appState.ownerIdNumber}`);
+            if (appState.ownerPhone) ownerMetaParts.push(`Tel: ${appState.ownerPhone}`);
+            const ownerMetaText = ownerMetaParts.join(' • ') || '';
+
+            document.getElementById('pnlBizMeta').textContent = bizMetaText;
+            document.getElementById('bsBizMeta').textContent = bizMetaText;
+            document.getElementById('pnlOwnerMeta').textContent = ownerMetaText;
+            document.getElementById('bsOwnerMeta').textContent = ownerMetaText;
+
+            // Owner Sign-off block at bottom of statements
+            document.getElementById('pnlSignOwnerName').textContent = appState.ownerName || 'Pemilik Perniagaan';
+            document.getElementById('bsSignOwnerName').textContent = appState.ownerName || 'Pemilik Perniagaan';
+            document.getElementById('pnlSignOwnerId').textContent = appState.ownerIdNumber ? `No. KP: ${appState.ownerIdNumber}` : '';
+            document.getElementById('bsSignOwnerId').textContent = appState.ownerIdNumber ? `No. KP: ${appState.ownerIdNumber}` : '';
+
+            document.getElementById('closingStockBtnText').textContent = formatMoney(stats.closingStock);
+
+            // P&L Statement
+            document.getElementById('pnlTotalRevenue').textContent = formatMoney(stats.totalRevenue);
+            const revKeys = Object.keys(stats.revenueByCategory);
+            document.getElementById('pnlRevenueBreakdown').innerHTML = revKeys.length
+                ? revKeys.map(k => `<div class="flex justify-between"><span>${k}</span><span class="font-semibold">${formatMoney(stats.revenueByCategory[k])}</span></div>`).join('')
+                : `<div class="text-slate-400 italic">Tiada jualan direkodkan lagi</div>`;
+
+            document.getElementById('pnlPurchases').textContent = formatMoney(stats.totalPurchasesCOGS);
+            document.getElementById('pnlClosingStock').textContent = `(${formatMoney(stats.closingStock)})`;
+            document.getElementById('pnlNetCOGS').textContent = formatMoney(stats.netCOGS);
+            document.getElementById('pnlGrossProfit').textContent = formatMoney(stats.grossProfit);
+
+            document.getElementById('pnlTotalExpenses').textContent = formatMoney(stats.totalOperatingExpenses);
+            const footerTotalEl = document.getElementById('pnlTotalExpensesFooter');
+            if (footerTotalEl) footerTotalEl.textContent = formatMoney(stats.totalOperatingExpenses);
+
+            document.getElementById('pnlExpenseBreakdown').innerHTML = OFFICIAL_EXPENSE_LABELS.map(label => {
+                const val = stats.expensesByCategory[label] || 0;
+                const textStyle = val > 0 ? 'text-slate-800 font-semibold' : 'text-slate-400';
+                return `<div class="flex justify-between items-center py-0.5 border-b border-slate-100 last:border-none">
+                    <span class="${val > 0 ? 'text-slate-800 font-medium' : 'text-slate-500'}">${label}</span>
+                    <span class="${textStyle}">${formatMoney(val)}</span>
+                </div>`;
+            }).join('');
+
+            const finalBanner = document.getElementById('pnlFinalBanner');
+            const finalLabel = document.getElementById('pnlFinalLabel');
+            document.getElementById('pnlNetProfit').textContent = formatMoney(stats.netProfit);
+            if (stats.netProfit >= 0) {
+                finalBanner.className = 'bg-emerald-600 text-white p-4 rounded-2xl flex justify-between items-center shadow-sm';
+                finalLabel.textContent = 'UNTUNG BERSIH TAHUN INI';
+            } else {
+                finalBanner.className = 'bg-rose-600 text-white p-4 rounded-2xl flex justify-between items-center shadow-sm';
+                finalLabel.textContent = 'RUGI BERSIH TAHUN INI';
+            }
+
+            // Balance Sheet Statement (susunan mengikut format rasmi)
+            const landBuilding = 0, vehicles = 0, otherNonCurrent = 0, investments = 0;
+            const tradeDebtors = 0, otherDebtors = 0, otherCurrent = 0;
+            const tradeCreditors = 0, otherCreditors = 0, broughtForward = 0;
+            const nonCurrentAssets = landBuilding + stats.equipmentAsset + vehicles + otherNonCurrent;
+            const currentAssets = stats.closingStock + tradeDebtors + otherDebtors + stats.cashBalance + stats.bankBalance + otherCurrent;
+            const setBS = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = formatMoney(v); };
+
+            // Aset bukan semasa
+            setBS('bsLandBuilding', landBuilding);
+            setBS('bsEquipment', stats.equipmentAsset);
+            setBS('bsVehicles', vehicles);
+            setBS('bsOtherNonCurrent', otherNonCurrent);
+            setBS('bsTotalNonCurrentAssetsFooter', nonCurrentAssets);
+            setBS('bsInvestments', investments);
+
+            // Aset semasa
+            setBS('bsStock', stats.closingStock);
+            setBS('bsTradeDebtors', tradeDebtors);
+            setBS('bsOtherDebtors', otherDebtors);
+            setBS('bsCash', stats.cashBalance);
+            setBS('bsBank', stats.bankBalance);
+            setBS('bsOtherCurrent', otherCurrent);
+            setBS('bsTotalCurrentAssetsFooter', currentAssets);
+
+            // Jumlah aset
+            setBS('bsTotalAssets', stats.totalAssets);
+
+            // Liabiliti
+            setBS('bsLoans', stats.loansLiability);
+            setBS('bsTradeCreditors', tradeCreditors);
+            setBS('bsOtherCreditors', otherCreditors);
+            setBS('bsTotalLiabilitiesFooter', stats.loansLiability + tradeCreditors + otherCreditors);
+
+            // Ekuiti pemilik
+            setBS('bsCapital', stats.ownerCapital);
+            setBS('bsBroughtForward', broughtForward);
+            setBS('bsNetProfit', stats.netProfit);
+            document.getElementById('bsDrawings').textContent = `(${formatMoney(stats.ownerDrawings)})`;
+            setBS('bsTotalEquityFooter', stats.totalEquity);
+
+            const totalLiabilitiesAndEquity = stats.loansLiability + stats.totalEquity;
+            const isBalanced = Math.abs(stats.totalAssets - totalLiabilitiesAndEquity) < 0.01;
+            document.getElementById('bsCheckAmount').textContent = isBalanced
+                ? `SEIMBANG (${formatMoney(stats.totalAssets)})`
+                : formatMoney(totalLiabilitiesAndEquity);
+        }
+
+        function switchTab(tabName) {
+            ['home', 'history', 'reports'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
+                const navBtn = document.getElementById(`nav-${t}`);
+                if (t === tabName) {
+                    navBtn.className = 'flex flex-col items-center py-1.5 px-4 rounded-2xl text-emerald-700 font-extrabold transition relative';
+                } else {
+                    navBtn.className = 'flex flex-col items-center py-1.5 px-4 rounded-2xl text-slate-400 font-bold transition relative';
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function switchReportSubTab(sub) {
+            const isPnl = sub === 'pnl';
+            document.getElementById('statement-pnl').classList.toggle('hidden', !isPnl);
+            document.getElementById('statement-bs').classList.toggle('hidden', isPnl);
+
+            document.getElementById('subtab-pnl').className = isPnl
+                ? 'py-2.5 px-3 rounded-xl font-extrabold text-xs bg-white text-slate-900 shadow-sm transition'
+                : 'py-2.5 px-3 rounded-xl font-extrabold text-xs text-slate-600 transition';
+            document.getElementById('subtab-bs').className = !isPnl
+                ? 'py-2.5 px-3 rounded-xl font-extrabold text-xs bg-white text-slate-900 shadow-sm transition'
+                : 'py-2.5 px-3 rounded-xl font-extrabold text-xs text-slate-600 transition';
+        }
+
+        function setHistoryFilter(filter) {
+            appState.historyFilter = filter;
+            ['ALL', 'IN', 'OUT'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                btn.className = f === filter
+                    ? 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white shrink-0'
+                    : 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 shrink-0';
+            });
+            renderHistoryList();
+        }
+
+        function openRecordModal(type) {
+            appState.currentModalType = type;
+            const list = CATEGORIES[type];
+            appState.selectedCategoryId = list[0].id;
+
+            const isIn = type === 'IN';
+            document.getElementById('modalTitle').textContent = isIn ? 'Rekod Duit Masuk (+)' : 'Rekod Duit Keluar (-)';
+            document.getElementById('modalTypeBadge').className = isIn
+                ? 'w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-extrabold'
+                : 'w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-extrabold';
+            document.getElementById('modalTypeBadge').innerHTML = isIn
+                ? '<i class="fa-solid fa-plus"></i>'
+                : '<i class="fa-solid fa-minus"></i>';
+
+            document.getElementById('saveTxBtn').className = isIn
+                ? 'w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base shadow-lg active-scale transition'
+                : 'w-full py-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-base shadow-lg active-scale transition';
+
+            document.getElementById('modalCurrencyPrefix').textContent = appState.currency;
+            document.getElementById('txAmountInput').value = '';
+            document.getElementById('txNoteInput').value = '';
+            document.getElementById('txDateInput').value = new Date().toISOString().split('T')[0];
+
+            renderCategoryGrid();
+            selectPaymentMethod('CASH');
+
+            document.getElementById('recordModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('txAmountInput').focus(), 100);
+        }
+
+        function closeRecordModal() {
+            document.getElementById('recordModal').classList.add('hidden');
+        }
+
+        function renderCategoryGrid() {
+            const list = CATEGORIES[appState.currentModalType];
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = list.map(cat => {
+                const selected = cat.id === appState.selectedCategoryId;
+                const activeClasses = selected
+                    ? 'border-2 border-emerald-600 bg-emerald-50/80 shadow-xs'
+                    : 'border border-slate-200 bg-white hover:bg-slate-50';
+                const groupHeader = cat.groupTitle
+                    ? `<div class="col-span-2 pt-2 first:pt-0 pb-0.5 text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 border-b border-slate-200">${cat.groupTitle}</div>`
+                    : '';
+                return `
+                    ${groupHeader}
+                    <button type="button" onclick="selectCategory('${cat.id}')" class="p-3 rounded-2xl text-left transition flex items-start gap-2.5 ${activeClasses}">
+                        <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid ${cat.icon}"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <span class="font-extrabold text-xs text-slate-900 block leading-snug">${cat.label}</span>
+                            <span class="text-[10px] text-slate-500 block leading-tight mt-0.5">${cat.sub}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectCategory(id) {
+            appState.selectedCategoryId = id;
+            renderCategoryGrid();
+        }
+
+        function selectPaymentMethod(method) {
+            appState.selectedPaymentMethod = method;
+            const cashBtn = document.getElementById('pay-CASH');
+            const bankBtn = document.getElementById('pay-BANK');
+            if (method === 'CASH') {
+                cashBtn.className = 'p-3.5 rounded-2xl border-2 border-emerald-600 bg-emerald-50/70 text-slate-900 font-extrabold text-sm flex items-center justify-center gap-2';
+                bankBtn.className = 'p-3.5 rounded-2xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm flex items-center justify-center gap-2';
+            } else {
+                bankBtn.className = 'p-3.5 rounded-2xl border-2 border-blue-600 bg-blue-50/70 text-slate-900 font-extrabold text-sm flex items-center justify-center gap-2';
+                cashBtn.className = 'p-3.5 rounded-2xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm flex items-center justify-center gap-2';
+            }
+        }
+
+        function saveTransaction() {
+            const amountVal = parseFloat(document.getElementById('txAmountInput').value);
+            if (!amountVal || amountVal <= 0) {
+                showToast('Sila masukkan jumlah duit dahulu!', 'fa-circle-exclamation text-amber-400');
+                document.getElementById('txAmountInput').focus();
+                return;
+            }
+
+            const noteVal = document.getElementById('txNoteInput').value.trim();
+            const dateVal = document.getElementById('txDateInput').value || new Date().toISOString().split('T')[0];
+
+            appState.transactions.push({
+                id: 'tx-' + Date.now(),
+                date: dateVal,
+                type: appState.currentModalType,
+                categoryId: appState.selectedCategoryId,
+                method: appState.selectedPaymentMethod,
+                amount: amountVal,
+                note: noteVal
+            });
+
+            closeRecordModal();
+            renderAll();
+            showToast('Berjaya direkod! Penyata Tahunan dikemas kini automatik.');
+
+            // Automatically push to Google Sheets if connected
+            if (appState.googleSheetWebhookUrl) {
+                pushAllDataToGoogleSheet(true);
+            }
+        }
+
+        function deleteTransaction(id) {
+            appState.transactions = appState.transactions.filter(t => t.id !== id);
+            renderAll();
+            showToast('Rekod telah dipadamkan.');
+
+            if (appState.googleSheetWebhookUrl) {
+                pushAllDataToGoogleSheet(true);
+            }
+        }
+
+        // Closing Stock Modal
+        function openClosingStockModal() {
+            document.getElementById('closingStockInput').value = appState.closingStockValue;
+            document.getElementById('closingStockModal').classList.remove('hidden');
+        }
+        function closeClosingStockModal() {
+            document.getElementById('closingStockModal').classList.add('hidden');
+        }
+        function saveClosingStock() {
+            appState.closingStockValue = Math.max(0, parseFloat(document.getElementById('closingStockInput').value) || 0);
+            closeClosingStockModal();
+            renderAll();
+            showToast('Baki Stok Akhir Tahun berjaya dikemas kini!');
+            if (appState.googleSheetWebhookUrl) {
+                pushAllDataToGoogleSheet(true);
+            }
+        }
+
+        function openSheetsModal() {
+            document.getElementById('sheetWebhookInput').value = appState.googleSheetWebhookUrl || '';
+            updateGoogleSheetStatusUI();
+            document.getElementById('sheetsModal').classList.remove('hidden');
+        }
+
+        function closeSheetsModal() {
+            document.getElementById('sheetsModal').classList.add('hidden');
+        }
+
+        function updateGoogleSheetStatusUI() {
+            const hasUrl = Boolean(appState.googleSheetWebhookUrl);
+            const dot = document.getElementById('sheetStatusDot');
+            const statusText = document.getElementById('sheetStatusText');
+            const bannerTitle = document.getElementById('homeSheetBannerTitle');
+            const bannerSub = document.getElementById('homeSheetBannerSub');
+            const badge = document.getElementById('modalSyncBadge');
+
+            if (hasUrl) {
+                if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-300 animate-ping';
+                if (statusText) statusText.textContent = appState.lastSyncedAt ? `Disimpan ke Google Sheets (${appState.lastSyncedAt})` : 'Google Sheets Disambung';
+                if (bannerTitle) bannerTitle.textContent = ' telah Disambung ke Google Sheet Anda';
+                if (bannerSub) {
+                    bannerSub.textContent = appState.lastSyncedAt
+                        ? `Auto-simpan setiap rekod • Terakhir pada ${appState.lastSyncedAt}`
+                        : 'Setiap Duit Masuk / Keluar disimpan automatik ke Google Sheet anda';
+                }
+                if (badge) {
+                    badge.textContent = 'Disambung';
+                    badge.className = 'text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md';
+                }
+            } else {
+                if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-300';
+                if (statusText) statusText.textContent = 'Tekan "Sheets" untuk sambung Google Sheets';
+                if (bannerTitle) bannerTitle.textContent = 'Simpan Data ke Google Sheets Anda';
+                if (bannerSub) bannerSub.textContent = 'Tekan sini untuk sambung Google Sheet atau muat turun fail Excel/CSV';
+                if (badge) {
+                    badge.textContent = 'Belum Disambung';
+                    badge.className = 'text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md';
+                }
+            }
+        }
+
+        async function saveAndSyncGoogleSheet() {
+            const url = document.getElementById('sheetWebhookInput').value.trim();
+            if (!url) {
+                showToast('Sila tampal pautan (URL) Web App Google Sheet anda dahulu!', 'fa-circle-exclamation text-amber-400');
+                return;
+            }
+            appState.googleSheetWebhookUrl = url;
+            await pushAllDataToGoogleSheet(false);
+        }
+
+        async function pushAllDataToGoogleSheet(silent = false) {
+            if (!appState.googleSheetWebhookUrl) return;
+            const btn = document.getElementById('syncNowBtn');
+            if (btn && !silent) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghantar...';
+            }
+
+            try {
+                const stats = computeFinancialStatements();
+                const enrichedTransactions = appState.transactions.map(tx => {
+                    const meta = getCategoryMeta(tx.categoryId);
+                    return {
+                        id: tx.id,
+                        date: tx.date,
+                        type: tx.type === 'IN' ? 'Duit Masuk' : 'Duit Keluar',
+                        categoryId: tx.categoryId,
+                        categoryLabel: meta.label,
+                        statementLine: meta.statement,
+                        method: tx.method === 'CASH' ? 'Tunai' : 'Bank/QR',
+                        amount: tx.amount,
+                        note: tx.note || ''
+                    };
+                });
+
+                const payload = {
+                    action: 'SYNC_ALL',
+                    businessName: appState.businessName,
+                    businessRegNo: appState.businessRegNo,
+                    businessType: appState.businessType,
+                    businessAddress: appState.businessAddress,
+                    ownerName: appState.ownerName,
+                    ownerIdNumber: appState.ownerIdNumber,
+                    ownerPhone: appState.ownerPhone,
+                    ownerEmail: appState.ownerEmail,
+                    currency: appState.currency,
+                    financialYear: appState.financialYear,
+                    closingStockValue: appState.closingStockValue,
+                    transactions: enrichedTransactions,
+                    summary: {
+                        totalRevenue: stats.totalRevenue,
+                        netCOGS: stats.netCOGS,
+                        grossProfit: stats.grossProfit,
+                        totalOperatingExpenses: stats.totalOperatingExpenses,
+                        netProfit: stats.netProfit,
+                        cashBalance: stats.cashBalance,
+                        bankBalance: stats.bankBalance,
+                        closingStock: stats.closingStock,
+                        equipmentAsset: stats.equipmentAsset,
+                        totalAssets: stats.totalAssets,
+                        loansLiability: stats.loansLiability,
+                        totalEquity: stats.totalEquity
+                    }
+                };
+
+                await fetch(appState.googleSheetWebhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+
+                const now = new Date();
+                appState.lastSyncedAt = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                saveState();
+                updateGoogleSheetStatusUI();
+
+                if (!silent) {
+                    showToast('Berjaya dihantar! Semak tab dalam Google Sheet anda.');
+                    closeSheetsModal();
+                } else {
+                    showToast('Disimpan & dihantar ke Google Sheets!');
+                }
+            } catch (err) {
+                showToast('Gagal menghubungi URL Google Sheet. Sila semak pautan anda.', 'fa-triangle-exclamation text-rose-400');
+            } finally {
+                if (btn && !silent) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Simpan & Hantar';
+                }
+            }
+        }
+
+        async function pullFromGoogleSheet() {
+            const url = document.getElementById('sheetWebhookInput').value.trim() || appState.googleSheetWebhookUrl;
+            if (!url) {
+                showToast('Sila tampal URL Web App Google Sheet anda dahulu!', 'fa-circle-exclamation text-amber-400');
+                return;
+            }
+            appState.googleSheetWebhookUrl = url;
+            const btn = document.getElementById('pullSheetBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memuatkan...';
+            }
+
+            try {
+                const res = await fetch(`${url}?action=LOAD`);
+                const data = await res.json();
+                if (data && Array.isArray(data.transactions)) {
+                    appState.transactions = data.transactions;
+                    if (data.businessName) appState.businessName = data.businessName;
+                    if (data.currency) appState.currency = data.currency;
+                    if (data.financialYear) appState.financialYear = String(data.financialYear);
+                    if (typeof data.closingStockValue !== 'undefined') {
+                        appState.closingStockValue = Number(data.closingStockValue) || 0;
+                    }
+                    const now = new Date();
+                    appState.lastSyncedAt = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    renderAll();
+                    closeSheetsModal();
+                    showToast(`Berjaya tarik ${data.transactions.length} rekod dari Google Sheet anda!`);
+                } else {
+                    showToast('Disambung! Google Sheet masih kosong.', 'fa-circle-info text-blue-400');
+                }
+            } catch (err) {
+                showToast('Gagal tarik data. Pastikan akses Web App ditetapkan kepada "Anyone".', 'fa-triangle-exclamation text-amber-400');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Tarik Data Sheet';
+                }
+            }
+        }
+
+        function downloadCSVForSheets() {
+            const stats = computeFinancialStatements();
+            const rows = [
+                ['EKSPORT AKAUN PERNIAGAAN BUKUKIRA'],
+                ['Nama Kedai / Syarikat', `"${(appState.businessName || '').replace(/"/g, '""')}"`],
+                ['No. Pendaftaran / SSM', `"${(appState.businessRegNo || '').replace(/"/g, '""')}"`],
+                ['Jenis Perniagaan', `"${(appState.businessType || '').replace(/"/g, '""')}"`],
+                ['Alamat Perniagaan', `"${(appState.businessAddress || '').replace(/"/g, '""')}"`],
+                ['Nama Penuh Pemilik', `"${(appState.ownerName || '').replace(/"/g, '""')}"`],
+                ['No. KP Pemilik', `"${(appState.ownerIdNumber || '').replace(/"/g, '""')}"`],
+                ['No. Telefon Pemilik', `"${(appState.ownerPhone || '').replace(/"/g, '""')}"`],
+                ['Emel Pemilik', `"${(appState.ownerEmail || '').replace(/"/g, '""')}"`],
+                ['Tahun Kewangan', appState.financialYear],
+                ['Mata Wang', appState.currency],
+                [],
+                ['1. REKOD TRANSAKSI HARIAN'],
+                ['Tarikh', 'Duit Masuk / Keluar', 'Kategori', 'Cara Bayaran', 'Jumlah', 'Nota'],
+                ...appState.transactions.map(tx => {
+                    const meta = getCategoryMeta(tx.categoryId);
+                    return [
+                        tx.date,
+                        tx.type === 'IN' ? 'DUIT MASUK (+)' : 'DUIT KELUAR (-)',
+                        meta.label,
+                        tx.method === 'CASH' ? 'TUNAI' : 'BANK/QR',
+                        tx.amount.toFixed(2),
+                        `"${(tx.note || '').replace(/"/g, '""')}"`
+                    ];
+                }),
+                [],
+                ['2. PENYATA PENDAPATAN AUTOMATIK (UNTUNG & RUGI)'],
+                ['Butiran', 'Jumlah (' + appState.currency + ')'],
+                ['Jumlah Jualan / Hasil', stats.totalRevenue.toFixed(2)],
+                ['Belian Stok Barang Niaga', stats.totalPurchasesCOGS.toFixed(2)],
+                ['Tolak: Baki Stok Akhir Tahun', (-stats.closingStock).toFixed(2)],
+                ['Kos Jualan Bersih', stats.netCOGS.toFixed(2)],
+                ['Untung Kasar', stats.grossProfit.toFixed(2)],
+                ['--- PERBELANJAAN : ---', ''],
+                ...OFFICIAL_EXPENSE_LABELS.map(label => [
+                    label,
+                    (stats.expensesByCategory[label] || 0).toFixed(2)
+                ]),
+                ['JUMLAH PERBELANJAAN', stats.totalOperatingExpenses.toFixed(2)],
+                ['UNTUNG BERSIH TAHUN INI', stats.netProfit.toFixed(2)],
+                [],
+                ['3. KUNCI KIRA-KIRA AUTOMATIK (PENYATA KEDUDUKAN KEWANGAN)'],
+                ['Butiran', 'Jumlah (' + appState.currency + ')'],
+                ['ASET BUKAN SEMASA :', ''],
+                ['Tanah dan bangunan', '0.00'],
+                ['Loji dan jentera', stats.equipmentAsset.toFixed(2)],
+                ['Kenderaan', '0.00'],
+                ['Aset bukan semasa lain', '0.00'],
+                ['JUMLAH ASET BUKAN SEMASA :', stats.equipmentAsset.toFixed(2)],
+                ['Pelaburan', '0.00'],
+                ['ASET SEMASA :', ''],
+                ['Inventori', stats.closingStock.toFixed(2)],
+                ['Penghutang perdagangan', '0.00'],
+                ['Penghutang lain', '0.00'],
+                ['Baki tunai', stats.cashBalance.toFixed(2)],
+                ['Baki dalam bank', stats.bankBalance.toFixed(2)],
+                ['Aset semasa lain', '0.00'],
+                ['JUMLAH ASET SEMASA', (stats.closingStock + stats.cashBalance + stats.bankBalance).toFixed(2)],
+                ['JUMLAH ASET', stats.totalAssets.toFixed(2)],
+                ['LIABILITI :', ''],
+                ['Pinjaman dan overdraf', stats.loansLiability.toFixed(2)],
+                ['Pemiutang dagangan', '0.00'],
+                ['Pemiutang lain', '0.00'],
+                ['JUMLAH LIABILITI', stats.loansLiability.toFixed(2)],
+                ['EKUITI PEMILIK :', ''],
+                ['Akaun modal', stats.ownerCapital.toFixed(2)],
+                ['Baki akaun semasa bawa hadapan', '0.00'],
+                ['Untung/rugi tahun semasa', stats.netProfit.toFixed(2)],
+                ['Ambilan/pendahuluan (bersih)', (-stats.ownerDrawings).toFixed(2)],
+                ['JUMLAH EKUITI PEMILIK', stats.totalEquity.toFixed(2)]
+            ];
+
+            const csvContent = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${appState.businessName.replace(/\s+/g, '_')}_${appState.financialYear}_GoogleSheets.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Fail jadual dimuat turun! Boleh dibuka dalam Google Sheets atau Excel.');
+        }
+
+        function copyAppsScriptCode() {
+            const scriptCode = `// SKRIP AUTO-SIMPAN BUKUKIRA <-> GOOGLE SHEETS
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. Simpan Tab Transaksi Harian
+  var txSheet = ss.getSheetByName('Transactions') || ss.insertSheet('Transactions');
+  txSheet.clearContents();
+  txSheet.appendRow(['Tarikh', 'Jenis', 'Kategori', 'Cara Bayaran', 'Jumlah', 'Nota', 'CategoryID', 'ID']);
+  (data.transactions || []).forEach(function(t) {
+    txSheet.appendRow([t.date, t.type, t.categoryLabel, t.method, t.amount, t.note, t.categoryId, t.id]);
+  });
+
+  // 2. Simpan Tab Penyata Kewangan Akhir Tahun
+  var repSheet = ss.getSheetByName('YearEnd_Statements') || ss.insertSheet('YearEnd_Statements');
+  repSheet.clearContents();
+  var s = data.summary || {};
+  repSheet.appendRow([data.businessName, 'Tahun: ' + data.financialYear]);
+  repSheet.appendRow(['--- PENYATA UNTUNG RUGI ---', 'Jumlah (' + data.currency + ')']);
+  repSheet.appendRow(['Jumlah Jualan / Hasil', s.totalRevenue]);
+  repSheet.appendRow(['Kos Jualan Bersih (Stok)', s.netCOGS]);
+  repSheet.appendRow(['Untung Kasar', s.grossProfit]);
+  repSheet.appendRow(['Perbelanjaan Operasi', s.totalOperatingExpenses]);
+  repSheet.appendRow(['UNTUNG BERSIH', s.netProfit]);
+  repSheet.appendRow(['', '']);
+  repSheet.appendRow(['--- KUNCI KIRA-KIRA ---', 'Jumlah (' + data.currency + ')']);
+  repSheet.appendRow(['ASET BUKAN SEMASA :', '']);
+  repSheet.appendRow(['Tanah dan bangunan', 0]);
+  repSheet.appendRow(['Loji dan jentera', s.equipmentAsset]);
+  repSheet.appendRow(['Kenderaan', 0]);
+  repSheet.appendRow(['Aset bukan semasa lain', 0]);
+  repSheet.appendRow(['JUMLAH ASET BUKAN SEMASA :', s.equipmentAsset]);
+  repSheet.appendRow(['Pelaburan', 0]);
+  repSheet.appendRow(['ASET SEMASA :', '']);
+  repSheet.appendRow(['Inventori', s.closingStock]);
+  repSheet.appendRow(['Penghutang perdagangan', 0]);
+  repSheet.appendRow(['Penghutang lain', 0]);
+  repSheet.appendRow(['Baki tunai', s.cashBalance]);
+  repSheet.appendRow(['Baki dalam bank', s.bankBalance]);
+  repSheet.appendRow(['Aset semasa lain', 0]);
+  repSheet.appendRow(['JUMLAH ASET SEMASA', (s.closingStock || 0) + (s.cashBalance || 0) + (s.bankBalance || 0)]);
+  repSheet.appendRow(['JUMLAH ASET', s.totalAssets]);
+  repSheet.appendRow(['LIABILITI :', '']);
+  repSheet.appendRow(['Pinjaman dan overdraf', s.loansLiability]);
+  repSheet.appendRow(['Pemiutang dagangan', 0]);
+  repSheet.appendRow(['Pemiutang lain', 0]);
+  repSheet.appendRow(['JUMLAH LIABILITI', s.loansLiability]);
+  repSheet.appendRow(['EKUITI PEMILIK :', '']);
+  repSheet.appendRow(['JUMLAH EKUITI PEMILIK', s.totalEquity]);
+
+  return ContentService.createTextOutput(JSON.stringify({ status: 'ok' })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var txSheet = ss.getSheetByName('Transactions');
+  if (!txSheet || txSheet.getLastRow() <= 1) {
+    return ContentService.createTextOutput(JSON.stringify({ transactions: [] })).setMimeType(ContentService.MimeType.JSON);
+  }
+  var rows = txSheet.getRange(2, 1, txSheet.getLastRow() - 1, 8).getValues();
+  var transactions = rows.map(function(r) {
+    var jenisStr = String(r[1]);
+    var isMasuk = jenisStr.indexOf('In') !== -1 || jenisStr.indexOf('Masuk') !== -1;
+    var caraStr = String(r[3]).toUpperCase();
+    var isCash = caraStr.indexOf('CASH') !== -1 || caraStr.indexOf('TUNAI') !== -1;
+    return {
+      date: Utilities.formatDate(new Date(r[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd'),
+      type: isMasuk ? 'IN' : 'OUT',
+      method: isCash ? 'CASH' : 'BANK',
+      amount: Number(r[4]) || 0,
+      note: r[5],
+      categoryId: r[6] || 'sales_goods',
+      id: r[7] || ('tx-' + Math.random())
+    };
+  });
+  return ContentService.createTextOutput(JSON.stringify({ transactions: transactions })).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = scriptCode;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Kod Penyambung disalin! Tampal dalam Google Sheets -> Extensions -> Apps Script.');
+        }
+
+        // Settings Modal (Company Info & Owner Details)
+        function openSettingsModal() {
+            document.getElementById('settingBizName').value = appState.businessName || '';
+            document.getElementById('settingBizRegNo').value = appState.businessRegNo || '';
+            document.getElementById('settingBizType').value = appState.businessType || '';
+            document.getElementById('settingBizAddress').value = appState.businessAddress || '';
+            document.getElementById('settingOwnerName').value = appState.ownerName || '';
+            document.getElementById('settingOwnerId').value = appState.ownerIdNumber || '';
+            document.getElementById('settingOwnerPhone').value = appState.ownerPhone || '';
+            document.getElementById('settingOwnerEmail').value = appState.ownerEmail || '';
+            document.getElementById('settingCurrency').value = appState.currency;
+            document.getElementById('settingYear').value = appState.financialYear;
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+        function saveSettings() {
+            appState.businessName = document.getElementById('settingBizName').value.trim() || 'Perniagaan Saya';
+            appState.businessRegNo = document.getElementById('settingBizRegNo').value.trim();
+            appState.businessType = document.getElementById('settingBizType').value.trim();
+            appState.businessAddress = document.getElementById('settingBizAddress').value.trim();
+            appState.ownerName = document.getElementById('settingOwnerName').value.trim() || 'Pemilik Perniagaan';
+            appState.ownerIdNumber = document.getElementById('settingOwnerId').value.trim();
+            appState.ownerPhone = document.getElementById('settingOwnerPhone').value.trim();
+            appState.ownerEmail = document.getElementById('settingOwnerEmail').value.trim();
+            appState.currency = document.getElementById('settingCurrency').value;
+            appState.financialYear = document.getElementById('settingYear').value;
+
+            closeSettingsModal();
+            renderAll();
+            showToast('Maklumat Kedai & Pemilik dikemas kini!');
+
+            if (appState.googleSheetWebhookUrl) {
+                pushAllDataToGoogleSheet(true);
+            }
+        }
+        function clearAllBusinessData() {
+            appState.transactions = [];
+            appState.closingStockValue = 0;
+            closeSettingsModal();
+            renderAll();
+            showToast('Semua rekod telah dipadam. Sedia untuk rekod baharu anda!');
+        }
+        function loadSampleBusinessData() {
+            const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            Object.keys(fresh).forEach(k => { if (!TRANSIENT_KEYS.includes(k)) appState[k] = fresh[k]; });
+            renderAll();
+        }
+
+        // Copy Year-End Summary for WhatsApp / Accountant
+        function copySummaryToClipboard() {
+            const s = computeFinancialStatements();
+            const text = [
+                `📊 *${appState.businessName.toUpperCase()} - RINGKASAN PENYATA TAHUNAN (${appState.financialYear})*`,
+                appState.businessRegNo ? `No. Pendaftaran: ${appState.businessRegNo}` : '',
+                `Pemilik: ${appState.ownerName}${appState.ownerIdNumber ? ' (' + appState.ownerIdNumber + ')' : ''}`,
+                `----------------------------------------`,
+                `*PENYATA UNTUNG & RUGI:*`,
+                `• Jumlah Jualan: ${formatMoney(s.totalRevenue)}`,
+                `• Kos Barang Niaga (Stok): ${formatMoney(s.netCOGS)}`,
+                `• Untung Kasar: ${formatMoney(s.grossProfit)}`,
+                `• Belanja Operasi: ${formatMoney(s.totalOperatingExpenses)}`,
+                `• *UNTUNG BERSIH: ${formatMoney(s.netProfit)}*`,
+                ``,
+                `*KUNCI KIRA-KIRA (PADA 31 DIS ${appState.financialYear}):*`,
+                `*ASET BUKAN SEMASA:*`,
+                `• Loji dan jentera: ${formatMoney(s.equipmentAsset)}`,
+                `• Jumlah Aset Bukan Semasa: ${formatMoney(s.equipmentAsset)}`,
+                `*ASET SEMASA:*`,
+                `• Inventori: ${formatMoney(s.closingStock)}`,
+                `• Baki tunai: ${formatMoney(s.cashBalance)}`,
+                `• Baki dalam bank: ${formatMoney(s.bankBalance)}`,
+                `• Jumlah Aset Semasa: ${formatMoney(s.closingStock + s.cashBalance + s.bankBalance)}`,
+                `• *JUMLAH ASET: ${formatMoney(s.totalAssets)}*`,
+                `*LIABILITI:*`,
+                `• Pinjaman dan overdraf: ${formatMoney(s.loansLiability)}`,
+                `• Jumlah Liabiliti: ${formatMoney(s.loansLiability)}`,
+                `*EKUITI PEMILIK:*`,
+                `• Akaun modal: ${formatMoney(s.ownerCapital)}`,
+                `• Untung/rugi tahun semasa: ${formatMoney(s.netProfit)}`,
+                `• Ambilan/pendahuluan (bersih): (${formatMoney(s.ownerDrawings)})`,
+                `• Jumlah Ekuiti Pemilik: ${formatMoney(s.totalEquity)}`
+            ].join('\n');
+
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Ringkasan Tahunan disalin! Boleh tampal terus di WhatsApp.');
+        }
+
+        // Direct PDF Download for Year-End Financial Statements
+        async function downloadYearEndPDF() {
+            const btn = document.getElementById('downloadPdfBtn');
+            const originalHTML = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald-700"></i> <span>Menjana...</span>';
+            }
+
+            showToast('Menyediakan dokumen PDF Penyata Kewangan anda...', 'fa-file-pdf text-emerald-400');
+
+            try {
+                const pnlEl = document.getElementById('statement-pnl');
+                const bsEl = document.getElementById('statement-bs');
+                const wasPnlHidden = pnlEl.classList.contains('hidden');
+                const wasBsHidden = bsEl.classList.contains('hidden');
+
+                // Temporarily make both Profit & Loss and Balance Sheet visible for complete PDF export
+                pnlEl.classList.remove('hidden');
+                bsEl.classList.remove('hidden');
+
+                const wrapper = document.createElement('div');
+                wrapper.style.padding = '16px';
+                wrapper.style.backgroundColor = '#ffffff';
+                wrapper.style.fontFamily = 'Inter, sans-serif';
+
+                const pnlClone = pnlEl.cloneNode(true);
+                pnlClone.querySelectorAll('.no-print').forEach(el => el.remove());
+
+                const bsClone = bsEl.cloneNode(true);
+                bsClone.querySelectorAll('.no-print').forEach(el => el.remove());
+                bsClone.style.marginTop = '24px';
+                bsClone.style.pageBreakBefore = 'always';
+
+                wrapper.appendChild(pnlClone);
+                wrapper.appendChild(bsClone);
+
+                // Restore original tab state immediately
+                if (wasPnlHidden) pnlEl.classList.add('hidden');
+                if (wasBsHidden) bsEl.classList.add('hidden');
+
+                const safeBizName = (appState.businessName || 'Perniagaan').replace(/[^a-z0-9]/gi, '_');
+                const filename = `${safeBizName}_Penyata_Kewangan_${appState.financialYear}.pdf`;
+
+                if (typeof html2pdf !== 'undefined') {
+                    await html2pdf()
+                        .set({
+                            margin: 10,
+                            filename: filename,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2, useCORS: true },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        })
+                        .from(wrapper)
+                        .save();
+                    showToast('Fail PDF Penyata Kewangan berjaya dimuat turun!');
+                } else {
+                    window.print();
+                }
+            } catch (err) {
+                window.print();
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
+        }
+
+        function showToast(msg, iconClass = 'fa-circle-check text-emerald-400') {
+            const banner = document.getElementById('toastBanner');
+            document.getElementById('toastMessage').textContent = msg;
+            document.getElementById('toastIcon').className = `fa-solid ${iconClass} text-xl`;
+            banner.classList.remove('hidden');
+            setTimeout(() => banner.classList.add('hidden'), 3200);
+        }
+
+        // PWA: pemasangan (manifest.webmanifest + sw.js dimuatkan sebagai fail sebenar)
+        let deferredPrompt = null;
+        const isStandalone = () =>
+            window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        function setupPWA() {
+            // Service Worker (HTTPS atau localhost sahaja) - fail sebenar supaya Chrome membenarkan pemasangan
+            if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+                const hadController = Boolean(navigator.serviceWorker.controller);
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (hadController) showToast('Versi baharu sedia. Tutup & buka semula aplikasi untuk kemas kini.', 'fa-rotate text-emerald-400');
+                });
+            }
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const installBtn = document.getElementById('nativeInstallBtn');
+                if (installBtn) installBtn.classList.remove('hidden');
+            });
+
+            window.addEventListener('appinstalled', () => {
+                deferredPrompt = null;
+                const installBtn = document.getElementById('nativeInstallBtn');
+                if (installBtn) installBtn.classList.add('hidden');
+                closePWAInfoModal();
+                showToast('BukuKira berjaya dipasang di skrin utama anda!');
+            });
+
+            // Sudah dipasang? Sembunyikan butang pasang di header & tunjuk status dalam modal
+            if (isStandalone()) {
+                const headerBtn = document.querySelector('button[onclick="openPWAInfoModal()"]');
+                if (headerBtn) headerBtn.classList.add('hidden');
+            }
+        }
+
+        function openPWAInfoModal() {
+            const iosBox = document.getElementById('iosInstallBox');
+            const andBox = document.getElementById('androidInstallBox');
+            if (iosBox && andBox) {
+                // Tunjuk panduan yang sesuai dengan telefon pengguna dahulu
+                iosBox.classList.toggle('order-first', isIOS());
+                andBox.classList.toggle('order-first', !isIOS());
+            }
+            document.getElementById('pwaModal').classList.remove('hidden');
+        }
+        function closePWAInfoModal() {
+            document.getElementById('pwaModal').classList.add('hidden');
+        }
+        async function triggerNativeInstall() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            const installBtn = document.getElementById('nativeInstallBtn');
+            if (installBtn) installBtn.classList.add('hidden');
+            closePWAInfoModal();
+        }
+
+        window.onload = function () {
+            loadState();
+            setupPWA();
+            renderAll();
+        };
+    </script>
+</body>
+</html>
