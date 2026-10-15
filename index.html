@@ -899,7 +899,159 @@
         </div>
 
     </div>
-let ownerCapital = Number(bb.capital) || 0;
+<!-- APPLICATION SCRIPT -->
+    <script>
+        const OFFICIAL_EXPENSE_LABELS = [
+            'Faedah pinjaman',
+            'Gaji dan upah',
+            'Sewa/pajakan',
+            'Kontrak dan subkontrak',
+            'Komisen',
+            'Hutang lapuk',
+            'Perjalanan dan pengangkutan',
+            'Pembaikan dan penyelenggaraan',
+            'Promosi dan iklan',
+            'Perbelanjaan-perbelanjaan lain'
+        ];
+
+        const CATEGORIES = {
+            IN: [
+                { id: 'sales_goods', label: 'Jualan Pelanggan', sub: 'Jual makanan, barang atau produk', icon: 'fa-cash-register', color: 'emerald', statement: 'PNL_REVENUE' },
+                { id: 'sales_service', label: 'Upah Servis / Kerja', sub: 'Baiki barang, penghantaran, tempahan', icon: 'fa-handshake-simple', color: 'teal', statement: 'PNL_REVENUE' },
+                { id: 'owner_capital', label: 'Modal Duit Sendiri', sub: 'Duit pemilik masuk dalam bisnes', icon: 'fa-piggy-bank', color: 'blue', statement: 'BS_EQUITY_ADD' },
+                { id: 'loan_received', label: 'Pinjaman Bisnes Masuk', sub: 'Pinjam dari bank / agensi / keluarga', icon: 'fa-hand-holding-dollar', color: 'indigo', statement: 'BS_LIABILITY_ADD' }
+            ],
+            OUT: [
+                { id: 'buy_stock', label: 'Beli Stok / Bahan Mentah', sub: 'Barang niaga & bahan untuk dijual', icon: 'fa-boxes-stacked', color: 'amber', statement: 'PNL_COGS', groupTitle: 'Kos Barang Niaga (Stok)' },
+                { id: 'exp_loan_interest', label: 'Faedah pinjaman', sub: 'Caj faedah / bunga pinjaman bank', icon: 'fa-percent', color: 'rose', statement: 'PNL_EXPENSE', groupTitle: 'Perbelanjaan Operasi' },
+                { id: 'staff_wages', label: 'Gaji dan upah', sub: 'Gaji pekerja, KWSP, PERKESO & elaun', icon: 'fa-users', color: 'orange', statement: 'PNL_EXPENSE' },
+                { id: 'rent_utilities', label: 'Sewa/pajakan', sub: 'Sewa kedai, tapak niaga, khemah / mesin', icon: 'fa-store', color: 'rose', statement: 'PNL_EXPENSE' },
+                { id: 'exp_contract', label: 'Kontrak dan subkontrak', sub: 'Upah subkontraktor / kerja luar', icon: 'fa-file-signature', color: 'indigo', statement: 'PNL_EXPENSE' },
+                { id: 'exp_commission', label: 'Komisen', sub: 'Komisen ejen, dropship atau jurujual', icon: 'fa-hand-holding-heart', color: 'teal', statement: 'PNL_EXPENSE' },
+                { id: 'exp_bad_debt', label: 'Hutang lapuk', sub: 'Hutang pelanggan yang tidak dapat dikutip', icon: 'fa-file-circle-xmark', color: 'slate', statement: 'PNL_EXPENSE' },
+                { id: 'transport_fuel', label: 'Perjalanan dan pengangkutan', sub: 'Minyak, tol, pos, penghantaran & tambang', icon: 'fa-truck-fast', color: 'cyan', statement: 'PNL_EXPENSE' },
+                { id: 'exp_repair', label: 'Pembaikan dan penyelenggaraan', sub: 'Servis mesin, baiki kedai & kenderaan', icon: 'fa-wrench', color: 'amber', statement: 'PNL_EXPENSE' },
+                { id: 'exp_promo', label: 'Promosi dan iklan', sub: 'Iklan FB/TikTok, banner, bunting & diskaun', icon: 'fa-bullhorn', color: 'pink', statement: 'PNL_EXPENSE' },
+                { id: 'exp_others', label: 'Perbelanjaan-perbelanjaan lain', sub: 'Bil elektrik, air, internet, plastik & alat tulis', icon: 'fa-receipt', color: 'emerald', statement: 'PNL_EXPENSE' },
+                { id: 'buy_equipment', label: 'Beli Mesin / Peralatan Kedai', sub: 'Peti ais, mesin kopi, meja (Harta/Aset)', icon: 'fa-screwdriver-wrench', color: 'purple', statement: 'BS_ASSET_ADD', groupTitle: 'Harta Kedai, Pinjaman & Pemilik' },
+                { id: 'owner_drawing', label: 'Ambil Duit Untuk Sendiri', sub: 'Kegunaan peribadi / belanja keluarga', icon: 'fa-user-check', color: 'pink', statement: 'BS_EQUITY_DRAW' },
+                { id: 'loan_repay', label: 'Bayar Pokok Pinjaman', sub: 'Bayar balik hutang pokok pinjaman bisnes', icon: 'fa-building-columns', color: 'slate', statement: 'BS_LIABILITY_PAY' }
+            ]
+        };
+
+        let appState = {
+            businessName: 'Kedai Kopi & Roti Maju',
+            businessRegNo: 'SSM-202603104829',
+            businessType: 'Gerai Makanan & Minuman',
+            businessAddress: 'No. 18, Pekan Changlun, 06010 Kedah',
+            ownerName: 'Ahmad bin Ali',
+            ownerIdNumber: '850214-02-5431',
+            ownerPhone: '012-456 7890',
+            ownerEmail: 'ahmad.kopimaju@gmail.com',
+            currency: 'RM',
+            financialYear: '2026',
+            closingStockValue: 650.00,
+            
+            beginningBalances: {
+                landBuilding: 0.00,
+                equipment: 0.00,
+                vehicles: 0.00,
+                otherNonCurrent: 0.00,
+                investments: 0.00,
+                tradeDebtors: 0.00,
+                otherDebtors: 0.00,
+                otherCurrent: 0.00,
+                cash: 0.00,
+                bank: 0.00,
+                loans: 0.00,
+                tradeCreditors: 0.00,
+                otherCreditors: 0.00,
+                capital: 0.00,
+                broughtForward: 0.00
+            },
+
+            googleSheetWebhookUrl: '',
+            lastSyncedAt: null,
+            currentModalType: 'IN',
+            selectedCategoryId: 'sales_goods',
+            selectedPaymentMethod: 'CASH',
+            historyFilter: 'ALL',
+            transactions: [
+                { id: 'tx-1', date: '2026-01-02', type: 'IN', categoryId: 'owner_capital', method: 'BANK', amount: 5000.00, note: 'Modal permulaan bank' },
+                { id: 'tx-2', date: '2026-01-03', type: 'IN', categoryId: 'owner_capital', method: 'CASH', amount: 1000.00, note: 'Tunai permulaan dalam laci' },
+                { id: 'tx-3', date: '2026-01-05', type: 'OUT', categoryId: 'buy_equipment', method: 'BANK', amount: 1800.00, note: 'Beli mesin kopi & pemanas' },
+                { id: 'tx-4', date: '2026-02-10', type: 'OUT', categoryId: 'buy_stock', method: 'CASH', amount: 2400.00, note: 'Beli biji kopi & roti' },
+                { id: 'tx-5', date: '2026-03-15', type: 'IN', categoryId: 'sales_goods', method: 'CASH', amount: 4850.00, note: 'Jualan tunai kedai' },
+                { id: 'tx-6', date: '2026-04-20', type: 'IN', categoryId: 'sales_goods', method: 'BANK', amount: 3600.00, note: 'Jualan DuitNow QR' },
+                { id: 'tx-7', date: '2026-06-01', type: 'OUT', categoryId: 'rent_utilities', method: 'BANK', amount: 1200.00, note: 'Sewa kedai' },
+                { id: 'tx-8', date: '2026-08-12', type: 'OUT', categoryId: 'staff_wages', method: 'CASH', amount: 900.00, note: 'Upah pekerja' },
+                { id: 'tx-9', date: '2026-08-25', type: 'OUT', categoryId: 'exp_others', method: 'BANK', amount: 300.00, note: 'Bil utiliti' },
+                { id: 'tx-10', date: '2026-09-18', type: 'OUT', categoryId: 'owner_drawing', method: 'CASH', amount: 500.00, note: 'Ambilan belanja rumah' }
+            ]
+        };
+
+        const STORAGE_KEY = 'bukukira-data-v1';
+        const START_WITH_SAMPLE = true;
+        const DEFAULT_STATE = JSON.parse(JSON.stringify(appState));
+        const TRANSIENT_KEYS = ['currentModalType', 'selectedCategoryId', 'selectedPaymentMethod', 'historyFilter'];
+
+        function saveState() {
+            try {
+                const persist = {};
+                Object.keys(appState).forEach(k => { if (!TRANSIENT_KEYS.includes(k)) persist[k] = appState[k]; });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
+            } catch (e) { }
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    Object.keys(saved).forEach(k => { 
+                        if (!TRANSIENT_KEYS.includes(k)) {
+                            if (k === 'beginningBalances') {
+                                appState.beginningBalances = Object.assign({}, appState.beginningBalances, saved[k]);
+                            } else {
+                                appState[k] = saved[k];
+                            }
+                        }
+                    });
+                } else if (!START_WITH_SAMPLE) {
+                    appState.transactions = [];
+                    appState.closingStockValue = 0;
+                }
+            } catch (e) { }
+        }
+
+        function getCategoryMeta(catId) {
+            const all = [...CATEGORIES.IN, ...CATEGORIES.OUT];
+            return all.find(c => c.id === catId) || all[0];
+        }
+
+        function formatMoney(num) {
+            const val = Number(num) || 0;
+            const sign = val < 0 ? '-' : '';
+            return `${sign}${appState.currency} ${Math.abs(val).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        // Multi-Year Financial Computation
+        function computeFinancialStatements(targetYear = appState.financialYear) {
+            const selectedYearStr = String(targetYear);
+            const selectedYearInt = parseInt(selectedYearStr, 10);
+            const bb = appState.beginningBalances || {};
+
+            let totalRevenue = 0;
+            let revenueByCategory = {};
+            let totalPurchasesCOGS = 0;
+            let totalOperatingExpenses = 0;
+            let expensesByCategory = {};
+
+            let cashBalance = Number(bb.cash) || 0;
+            let bankBalance = Number(bb.bank) || 0;
+            let equipmentAsset = Number(bb.equipment) || 0;
+            let loansLiability = Number(bb.loans) || 0
+	    let ownerCapital = Number(bb.capital) || 0;
             let ownerDrawingsThisYear = 0;
             
             let priorYearsRetainedProfit = 0;
