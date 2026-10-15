@@ -9,19 +9,14 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BukuKira">
-    <!-- PWA: manifest + icons -->
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>BukuKira - Akaun Bisnes Mudah</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- html2pdf.js for Direct PDF Statement Download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -39,12 +34,8 @@
             scrollbar-width: none;
         }
         @media print {
-            body {
-                background-color: #ffffff;
-            }
-            .no-print {
-                display: none !important;
-            }
+            body { background-color: #ffffff; }
+            .no-print { display: none !important; }
             .print-container {
                 max-width: 100% !important;
                 box-shadow: none !important;
@@ -52,13 +43,9 @@
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            .print-only {
-                display: block !important;
-            }
+            .print-only { display: block !important; }
         }
-        .active-scale:active {
-            transform: scale(0.97);
-        }
+        .active-scale:active { transform: scale(0.97); }
         .hidden { display: none !important; }
         @media print { .print-only { display: block !important; } }
         header.sticky { padding-top: calc(1.25rem + env(safe-area-inset-top, 0px)); }
@@ -66,10 +53,9 @@
 </head>
 <body class="text-slate-800 antialiased selection:bg-emerald-500 selection:text-white">
 
-    <!-- Main App Container -->
     <div class="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative print-container border-x border-slate-200">
         
-        <!-- Top Header Bar -->
+        <!-- Header (Only Sheets & Install Buttons; Settings opened by tapping Biz Name) -->
         <header class="bg-emerald-700 text-white pt-5 pb-4 px-5 sticky top-0 z-30 shadow-md no-print">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -105,13 +91,10 @@
             <span id="toastMessage" class="text-sm font-semibold flex-1">Berjaya disimpan!</span>
         </div>
 
-        <!-- MAIN CONTENT AREA -->
         <main class="flex-1 pb-28 px-4 pt-4 overflow-y-auto no-scrollbar">
 
             <!-- VIEW 1: HOME -->
             <section id="view-home" class="space-y-5">
-                
-                <!-- Google Sheets Live Connection Pill -->
                 <div onclick="openSheetsModal()" class="cursor-pointer bg-white border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs hover:bg-emerald-50/40 transition">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-lg">
@@ -125,7 +108,6 @@
                     <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="grid grid-cols-2 gap-3.5">
                     <button onclick="openRecordModal('IN')" class="active-scale bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white p-5 rounded-3xl shadow-lg shadow-emerald-600/20 flex flex-col items-center justify-center text-center border-b-4 border-emerald-800 transition">
                         <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mb-2.5 shadow-inner">
@@ -144,7 +126,6 @@
                     </button>
                 </div>
 
-                <!-- Cash + Bank Current Position -->
                 <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-4">
                     <div class="flex items-center justify-between">
                         <div>
@@ -174,7 +155,6 @@
                     </div>
                 </div>
 
-                <!-- Profit Summary Box -->
                 <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-3">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Untung Bisnes Tahun <span class="yearLabel">2026</span></h2>
@@ -199,7 +179,6 @@
                     </div>
                 </div>
 
-                <!-- Recent Entries Preview -->
                 <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-sm font-extrabold text-slate-800">Rekod Terkini</h2>
@@ -237,26 +216,30 @@
             </section>
 
             <!-- VIEW 3: FINANCIAL STATEMENTS -->
-            <section id="view-reports" class="space-y-5 hidden">
+            <section id="view-reports" class="space-y-4 hidden">
                 
-                <!-- Explainer & Actions Card -->
+                <!-- Multi-Year Selector Bar -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs no-print flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-emerald-600 text-sm"></i>
+                        <span class="text-xs font-extrabold text-slate-800">Tahun Kewangan:</span>
+                    </div>
+                    <select id="reportYearSelect" onchange="changeReportYear(this.value)" class="bg-slate-100 border border-slate-300 font-extrabold text-xs text-slate-800 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </select>
+                </div>
+
+                <!-- Explainer & Export Actions Card -->
                 <div class="bg-emerald-900 text-white rounded-3xl p-5 shadow-md space-y-3 no-print">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <span class="inline-block bg-emerald-700 text-emerald-200 text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-lg mb-1">
-                                Penyata Kewangan Akhir Tahun Automatik
-                            </span>
-                            <h2 class="text-lg font-extrabold leading-snug">Sedia Untuk LHDN, Pinjaman Bank, atau SSM</h2>
-                            <p class="text-xs text-emerald-100 mt-1 leading-relaxed">
-                                Catatan harian anda digabungkan dengan baki awal perniagaan secara automatik.
-                            </p>
-                        </div>
+                    <div>
+                        <span class="inline-block bg-emerald-700 text-emerald-200 text-[11px] font-extrabold uppercase px-2.5 py-1 rounded-lg mb-1">
+                            Penyata Kewangan Tahunan Automatik
+                        </span>
+                        <h2 class="text-lg font-extrabold leading-snug">Sedia Untuk LHDN, Pinjaman Bank, atau SSM</h2>
                     </div>
 
-                    <!-- Helpers: Stock & Beginning Balance Quick Access -->
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-white/10 rounded-2xl p-3 border border-white/15 flex flex-col justify-between">
-                            <span class="font-bold text-xs text-emerald-200 block mb-1">Stok Akhir Tahun:</span>
+                            <span class="font-bold text-xs text-emerald-200 block mb-1">Baki Stok Akhir:</span>
                             <button onclick="openClosingStockModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold text-xs px-3 py-2 rounded-xl active-scale shadow text-center">
                                 <span id="closingStockBtnText">RM 0.00</span> <i class="fa-solid fa-pen ml-1 text-[10px]"></i>
                             </button>
@@ -269,7 +252,6 @@
                         </div>
                     </div>
 
-                    <!-- Print / Export Buttons -->
                     <div class="grid grid-cols-3 gap-2 pt-1">
                         <button id="downloadPdfBtn" onclick="downloadYearEndPDF()" class="bg-white text-emerald-900 font-extrabold text-xs py-3 px-3 rounded-2xl shadow flex items-center justify-center gap-1.5 active-scale">
                             <i class="fa-solid fa-file-pdf text-rose-600 text-sm"></i>
@@ -286,15 +268,12 @@
                     </div>
                 </div>
 
-                <!-- Statement Selector Tabs -->
                 <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1.5 rounded-2xl no-print">
                     <button onclick="switchReportSubTab('pnl')" id="subtab-pnl" class="py-2.5 px-3 rounded-xl font-extrabold text-xs bg-white text-slate-900 shadow-sm transition">
                         1. Untung Rugi
-                        <span class="block text-[10px] font-medium text-slate-500">Kiraan Untung Bisnes</span>
                     </button>
                     <button onclick="switchReportSubTab('bs')" id="subtab-bs" class="py-2.5 px-3 rounded-xl font-extrabold text-xs text-slate-600 transition">
                         2. Kunci Kira-Kira
-                        <span class="block text-[10px] font-medium text-slate-500">Harta & Hutang Bisnes</span>
                     </button>
                 </div>
 
@@ -306,11 +285,6 @@
                         <p id="pnlOwnerMeta" class="text-[11px] font-medium text-slate-500 pb-1">Pemilik: Ahmad bin Ali (No. KP: 850214-02-5431)</p>
                         <p class="text-sm font-extrabold text-slate-800 pt-1 border-t border-slate-100">PENYATA PENDAPATAN (UNTUNG & RUGI)</p>
                         <p class="text-xs text-slate-500">Bagi Tahun Kewangan Berakhir 31 Disember <span class="yearLabel">2026</span></p>
-                    </div>
-
-                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-xs text-emerald-900 flex items-center gap-2.5 no-print">
-                        <i class="fa-solid fa-circle-info text-emerald-600 text-base"></i>
-                        <span><b>Penerangan Mudah:</b> Penyata ini menunjukkan semua jualan anda ditolak dengan kos barang dan belanja kedai sepanjang tahun.</span>
                     </div>
 
                     <div class="space-y-4 text-sm">
@@ -389,16 +363,6 @@
                         <p id="bsOwnerMeta" class="text-[11px] font-medium text-slate-500 pb-1">Pemilik: Ahmad bin Ali (No. KP: 850214-02-5431)</p>
                         <p class="text-sm font-extrabold text-slate-800 pt-1 border-t border-slate-100">KUNCI KIRA-KIRA (PENYATA KEDUDUKAN KEWANGAN)</p>
                         <p class="text-xs text-slate-500">Pada 31 Disember <span class="yearLabel">2026</span></p>
-                    </div>
-
-                    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-900 flex items-center justify-between no-print">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-scale-balanced text-blue-600 text-base"></i>
-                            <span>Susunan Kunci Kira-Kira mengikut format standard perakaunan rasmi.</span>
-                        </div>
-                        <button onclick="openBeginningBalancesModal()" class="text-[11px] bg-white border border-blue-300 text-blue-800 font-bold px-2.5 py-1 rounded-lg shrink-0 hover:bg-blue-50">
-                            Edit Baki Awal
-                        </button>
                     </div>
 
                     <div class="space-y-4 text-sm">
@@ -532,14 +496,13 @@
                                     <span id="bsCarriedForward" class="font-extrabold">RM 0.00</span>
                                 </div>
                             </div>
-                            <!-- JUMLAH EKUITI PEMILIK (Sama format border dengan JUMLAH ASET) -->
                             <div class="border-y-2 border-slate-900 py-2 px-3 flex justify-between items-center bg-slate-50 rounded-xl mt-3">
                                 <span class="font-extrabold text-xs text-slate-950">JUMLAH EKUITI PEMILIK</span>
                                 <span id="bsTotalEquityFooter" class="font-extrabold text-sm text-slate-950">RM 0.00</span>
                             </div>
                         </div>
 
-                        <!-- Balance Check Badge (Hidden from print so statement fits 1 page) -->
+                        <!-- Verification Badge (Hidden in Print/PDF to guarantee 1-page fit) -->
                         <div class="no-print bg-slate-900 text-white p-3.5 rounded-2xl flex items-center justify-between text-xs">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
@@ -551,7 +514,7 @@
                             <span id="bsCheckAmount" class="font-extrabold text-sm text-emerald-400">SEIMBANG</span>
                         </div>
 
-                        <!-- Owner Sign-Off Footer -->
+                        <!-- Sign-off Block -->
                         <div class="pt-4 border-t border-slate-200 flex items-end justify-between text-[11px] text-slate-500">
                             <div>
                                 <span class="font-bold text-slate-700 block">Disediakan & Disahkan Oleh Pemilik:</span>
@@ -567,8 +530,7 @@
                 </div>
             </section>
         </main>
-
-        <!-- Bottom Navigation Bar -->
+<!-- Bottom Navigation Bar -->
         <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-md w-full bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-6 flex justify-around items-center z-30 no-print shadow-lg">
             <button id="nav-home" onclick="switchTab('home')" class="flex flex-col items-center py-1.5 px-4 rounded-2xl text-emerald-700 font-extrabold transition relative">
                 <i class="fa-solid fa-house text-lg"></i>
@@ -584,7 +546,7 @@
             </button>
         </nav>
 
-        <!-- MODAL 1: REKOD DUIT MASUK / KELUAR -->
+        <!-- MODAL 1: DUIT MASUK / KELUAR -->
         <div id="recordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
             <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -648,7 +610,7 @@
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <p class="text-xs text-slate-600 leading-relaxed">Masukkan nilai barang niaga yang masih belum terjual pada akhir tahun. Nilai ini menjadi <b>Inventori</b> dalam Kunci Kira-Kira.</p>
+                <p class="text-xs text-slate-600 leading-relaxed">Masukkan nilai barang niaga yang masih belum terjual pada akhir tahun bagi tahun kewangan terpilih.</p>
                 <input id="closingStockInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xl font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <button type="button" onclick="saveClosingStock()" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg active-scale transition">Simpan Baki Stok</button>
             </div>
@@ -708,12 +670,11 @@
                             </select>
                         </label>
                         <label class="block">
-                            <span class="text-[11px] font-bold text-slate-600 block mb-1">Tahun Kewangan</span>
+                            <span class="text-[11px] font-bold text-slate-600 block mb-1">Tahun Kewangan Asal</span>
                             <input id="settingYear" type="number" inputmode="numeric" min="2000" max="2100" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </label>
                     </div>
 
-                    <!-- Shortcut to Beginning Balances -->
                     <button type="button" onclick="closeSettingsModal(); openBeginningBalancesModal();" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs flex items-center justify-center gap-2 border border-slate-200">
                         <i class="fa-solid fa-sliders text-emerald-600"></i>
                         <span>Tetapan Baki Awal Kunci Kira-Kira</span>
@@ -729,13 +690,13 @@
             </div>
         </div>
 
-        <!-- MODAL 3B: TETAPAN BAKI AWAL SETIAP AKAUN KUNCI KIRA-KIRA -->
+        <!-- MODAL 3B: TETAPAN BAKI AWAL SETIAP AKAUN -->
         <div id="beginningBalancesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
             <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div>
                         <h3 class="font-extrabold text-base text-slate-900">Baki Awal Akaun (Bawa Hadapan)</h3>
-                        <p class="text-[11px] text-slate-500">Baki awal pada permulaan tahun kewangan ini</p>
+                        <p class="text-[11px] text-slate-500">Baki permulaan asal sebelum tahun transaksi</p>
                     </div>
                     <button type="button" onclick="closeBeginningBalancesModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
                         <i class="fa-solid fa-xmark"></i>
@@ -814,7 +775,7 @@
                     </label>
 
                     <div class="font-extrabold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg uppercase tracking-wider text-[10px] mt-2">
-                        4. Ekuiti Pemilik (Baki Bawa Hadapan)
+                        4. Ekuiti Pemilik (Baki Bawa Hadapan Asal)
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="block">
@@ -822,7 +783,7 @@
                             <input id="bb_capital" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
                         </label>
                         <label class="block">
-                            <span class="text-slate-600 block mb-0.5">Akaun Semasa B. Hadapan</span>
+                            <span class="text-slate-600 block mb-0.5">Akaun Semasa B. Hadapan Asal</span>
                             <input id="bb_broughtForward" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
                         </label>
                     </div>
@@ -859,18 +820,14 @@
 
                 <div class="flex flex-col gap-2.5 text-xs text-slate-700">
                     <div id="androidInstallBox" class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-                        <span class="font-extrabold text-slate-900 block mb-1"><i class="fa-brands fa-android text-emerald-600 mr-1"></i> Pengguna Telefon Android (Chrome):</span>
-                        1. Buka pautan aplikasi dalam <b>Chrome</b>.<br>
+                        <span class="font-extrabold text-slate-900 block mb-1"><i class="fa-brands fa-android text-emerald-600 mr-1"></i> Pengguna Android (Chrome):</span>
+                        1. Buka pautan dalam <b>Chrome</b>.<br>
                         2. Tekan <b>Menu 3 Titik</b> <i class="fa-solid fa-ellipsis-vertical"></i> &rarr; <b>"Install app" / "Add to Home screen"</b>.
                     </div>
                     <div id="iosInstallBox" class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
                         <span class="font-extrabold text-slate-900 block mb-1"><i class="fa-brands fa-apple mr-1"></i> Pengguna iPhone / iPad (Safari):</span>
-                        1. Buka pautan aplikasi dalam <b>Safari</b>.<br>
+                        1. Buka pautan dalam <b>Safari</b>.<br>
                         2. Tekan butang <b>Share (Kongsi)</b> <i class="fa-solid fa-arrow-up-from-bracket text-blue-600"></i> &rarr; <b>"Add to Home Screen"</b>.
-                    </div>
-                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-[11px] text-emerald-900 leading-relaxed">
-                        <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i>
-                        Semua rekod disimpan di dalam telefon anda sendiri. Gunakan <b>Fail Excel/CSV</b> atau <b>Google Sheets</b> untuk membuat salinan sandaran.
                     </div>
                 </div>
 
@@ -880,7 +837,7 @@
             </div>
         </div>
 
-        <!-- MODAL 5: GOOGLE SHEETS AUTO-SYNC & EXPORT MODAL -->
+        <!-- MODAL 5: GOOGLE SHEETS SYNC -->
         <div id="sheetsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
             <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -900,15 +857,15 @@
 
                 <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2.5">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-extrabold text-emerald-950">Cara 1: Muat Turun Terus (Tanpa Setup)</span>
+                        <span class="text-xs font-extrabold text-emerald-950">Cara 1: Muat Turun Fail Jadual</span>
                         <span class="text-[10px] font-bold bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-md">Paling Mudah</span>
                     </div>
                     <p class="text-[11px] text-emerald-800 leading-relaxed">
-                        Muat turun fail jadual lengkap mengandungi semua rekod harian, Penyata Untung Rugi & Kunci Kira-Kira untuk dibuka dalam Google Sheets atau Excel.
+                        Muat turun fail jadual lengkap (.CSV) mengandungi semua rekod dan penyata tahunan untuk dibuka dalam Excel atau Google Sheets.
                     </p>
                     <button onclick="downloadCSVForSheets()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow flex items-center justify-center gap-2 active-scale transition">
                         <i class="fa-solid fa-file-csv text-sm"></i>
-                        <span>Muat Turun Fail Jadual (.CSV) Sekarang</span>
+                        <span>Muat Turun Fail (.CSV) Sekarang</span>
                     </button>
                 </div>
 
@@ -918,7 +875,7 @@
                         <span id="modalSyncBadge" class="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">Belum Disambung</span>
                     </div>
                     <p class="text-[11px] text-slate-600 leading-relaxed">
-                        Tampal URL Web App Google Sheet anda di bawah supaya setiap rekod disimpan secara automatik ke Google Drive anda.
+                        Tampal URL Web App Google Apps Script anda untuk auto-sync setiap rekod ke Google Drive.
                     </p>
                     <input id="sheetWebhookInput" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
 
@@ -932,7 +889,7 @@
                     </div>
 
                     <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between">
-                        <span class="text-[11px] text-slate-500 font-semibold">Perlukan kod Google Apps Script?</span>
+                        <span class="text-[11px] text-slate-500 font-semibold">Perlukan kod skrip?</span>
                         <button onclick="copyAppsScriptCode()" class="text-[11px] font-extrabold text-emerald-700 hover:underline flex items-center gap-1">
                             <i class="fa-regular fa-copy"></i> Salin Kod Skrip
                         </button>
@@ -942,407 +899,53 @@
         </div>
 
     </div>
-
-    <!-- APPLICATION LOGIC -->
-    <script>
-        const OFFICIAL_EXPENSE_LABELS = [
-            'Faedah pinjaman',
-            'Gaji dan upah',
-            'Sewa/pajakan',
-            'Kontrak dan subkontrak',
-            'Komisen',
-            'Hutang lapuk',
-            'Perjalanan dan pengangkutan',
-            'Pembaikan dan penyelenggaraan',
-            'Promosi dan iklan',
-            'Perbelanjaan-perbelanjaan lain'
-        ];
-
-        const CATEGORIES = {
-            IN: [
-                {
-                    id: 'sales_goods',
-                    label: 'Jualan Pelanggan',
-                    sub: 'Jual makanan, barang atau produk',
-                    icon: 'fa-cash-register',
-                    color: 'emerald',
-                    statement: 'PNL_REVENUE'
-                },
-                {
-                    id: 'sales_service',
-                    label: 'Upah Servis / Kerja',
-                    sub: 'Baiki barang, penghantaran, tempahan',
-                    icon: 'fa-handshake-simple',
-                    color: 'teal',
-                    statement: 'PNL_REVENUE'
-                },
-                {
-                    id: 'owner_capital',
-                    label: 'Modal Duit Sendiri',
-                    sub: 'Duit pemilik masuk dalam bisnes',
-                    icon: 'fa-piggy-bank',
-                    color: 'blue',
-                    statement: 'BS_EQUITY_ADD'
-                },
-                {
-                    id: 'loan_received',
-                    label: 'Pinjaman Bisnes Masuk',
-                    sub: 'Pinjam dari bank / agensi / keluarga',
-                    icon: 'fa-hand-holding-dollar',
-                    color: 'indigo',
-                    statement: 'BS_LIABILITY_ADD'
-                }
-            ],
-            OUT: [
-                {
-                    id: 'buy_stock',
-                    label: 'Beli Stok / Bahan Mentah',
-                    sub: 'Barang niaga & bahan untuk dijual',
-                    icon: 'fa-boxes-stacked',
-                    color: 'amber',
-                    statement: 'PNL_COGS',
-                    groupTitle: 'Kos Barang Niaga (Stok)'
-                },
-                {
-                    id: 'exp_loan_interest',
-                    label: 'Faedah pinjaman',
-                    sub: 'Caj faedah / bunga pinjaman bank',
-                    icon: 'fa-percent',
-                    color: 'rose',
-                    statement: 'PNL_EXPENSE',
-                    groupTitle: 'Perbelanjaan Operasi'
-                },
-                {
-                    id: 'staff_wages',
-                    label: 'Gaji dan upah',
-                    sub: 'Gaji pekerja, KWSP, PERKESO & elaun',
-                    icon: 'fa-users',
-                    color: 'orange',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'rent_utilities',
-                    label: 'Sewa/pajakan',
-                    sub: 'Sewa kedai, tapak niaga, khemah / mesin',
-                    icon: 'fa-store',
-                    color: 'rose',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'exp_contract',
-                    label: 'Kontrak dan subkontrak',
-                    sub: 'Upah subkontraktor / kerja luar',
-                    icon: 'fa-file-signature',
-                    color: 'indigo',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'exp_commission',
-                    label: 'Komisen',
-                    sub: 'Komisen ejen, dropship atau jurujual',
-                    icon: 'fa-hand-holding-heart',
-                    color: 'teal',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'exp_bad_debt',
-                    label: 'Hutang lapuk',
-                    sub: 'Hutang pelanggan yang tidak dapat dikutip',
-                    icon: 'fa-file-circle-xmark',
-                    color: 'slate',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'transport_fuel',
-                    label: 'Perjalanan dan pengangkutan',
-                    sub: 'Minyak, tol, pos, penghantaran & tambang',
-                    icon: 'fa-truck-fast',
-                    color: 'cyan',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'exp_repair',
-                    label: 'Pembaikan dan penyelenggaraan',
-                    sub: 'Servis mesin, baiki kedai & kenderaan',
-                    icon: 'fa-wrench',
-                    color: 'amber',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'exp_promo',
-                    label: 'Promosi dan iklan',
-                    sub: 'Iklan FB/TikTok, banner, bunting & diskaun',
-                    icon: 'fa-bullhorn',
-                    color: 'pink',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'exp_others',
-                    label: 'Perbelanjaan-perbelanjaan lain',
-                    sub: 'Bil elektrik, air, internet, plastik & alat tulis',
-                    icon: 'fa-receipt',
-                    color: 'emerald',
-                    statement: 'PNL_EXPENSE'
-                },
-                {
-                    id: 'buy_equipment',
-                    label: 'Beli Mesin / Peralatan Kedai',
-                    sub: 'Peti ais, mesin kopi, meja (Harta/Aset)',
-                    icon: 'fa-screwdriver-wrench',
-                    color: 'purple',
-                    statement: 'BS_ASSET_ADD',
-                    groupTitle: 'Harta Kedai, Pinjaman & Pemilik'
-                },
-                {
-                    id: 'owner_drawing',
-                    label: 'Ambil Duit Untuk Sendiri',
-                    sub: 'Kegunaan peribadi / belanja keluarga',
-                    icon: 'fa-user-check',
-                    color: 'pink',
-                    statement: 'BS_EQUITY_DRAW'
-                },
-                {
-                    id: 'loan_repay',
-                    label: 'Bayar Pokok Pinjaman',
-                    sub: 'Bayar balik hutang pokok pinjaman bisnes',
-                    icon: 'fa-building-columns',
-                    color: 'slate',
-                    statement: 'BS_LIABILITY_PAY'
-                }
-            ]
-        };
-
-        let appState = {
-            businessName: 'Kedai Kopi & Roti Maju',
-            businessRegNo: 'SSM-202603104829',
-            businessType: 'Gerai Makanan & Minuman',
-            businessAddress: 'No. 18, Pekan Changlun, 06010 Kedah',
-            ownerName: 'Ahmad bin Ali',
-            ownerIdNumber: '850214-02-5431',
-            ownerPhone: '012-456 7890',
-            ownerEmail: 'ahmad.kopimaju@gmail.com',
-            currency: 'RM',
-            financialYear: '2026',
-            closingStockValue: 650.00,
+let ownerCapital = Number(bb.capital) || 0;
+            let ownerDrawingsThisYear = 0;
             
-            beginningBalances: {
-                landBuilding: 0.00,
-                equipment: 0.00,
-                vehicles: 0.00,
-                otherNonCurrent: 0.00,
-                investments: 0.00,
-                tradeDebtors: 0.00,
-                otherDebtors: 0.00,
-                otherCurrent: 0.00,
-                cash: 0.00,
-                bank: 0.00,
-                loans: 0.00,
-                tradeCreditors: 0.00,
-                otherCreditors: 0.00,
-                capital: 0.00,
-                broughtForward: 0.00
-            },
-
-            googleSheetWebhookUrl: '',
-            lastSyncedAt: null,
-            currentModalType: 'IN',
-            selectedCategoryId: 'sales_goods',
-            selectedPaymentMethod: 'CASH',
-            historyFilter: 'ALL',
-            transactions: [
-                {
-                    id: 'tx-1',
-                    date: '2026-01-02',
-                    type: 'IN',
-                    categoryId: 'owner_capital',
-                    method: 'BANK',
-                    amount: 5000.00,
-                    note: 'Modal permulaan masuk ke akaun bank kedai'
-                },
-                {
-                    id: 'tx-2',
-                    date: '2026-01-03',
-                    type: 'IN',
-                    categoryId: 'owner_capital',
-                    method: 'CASH',
-                    amount: 1000.00,
-                    note: 'Duit syiling & tunai permulaan dalam laci kedai'
-                },
-                {
-                    id: 'tx-3',
-                    date: '2026-01-05',
-                    type: 'OUT',
-                    categoryId: 'buy_equipment',
-                    method: 'BANK',
-                    amount: 1800.00,
-                    note: 'Beli mesin bancuh kopi & almari pemanas roti'
-                },
-                {
-                    id: 'tx-4',
-                    date: '2026-02-10',
-                    type: 'OUT',
-                    categoryId: 'buy_stock',
-                    method: 'CASH',
-                    amount: 2400.00,
-                    note: 'Beli biji kopi, susu tin, roti, telur & kaya'
-                },
-                {
-                    id: 'tx-5',
-                    date: '2026-03-15',
-                    type: 'IN',
-                    categoryId: 'sales_goods',
-                    method: 'CASH',
-                    amount: 4850.00,
-                    note: 'Jualan tunai pelanggan di kedai'
-                },
-                {
-                    id: 'tx-6',
-                    date: '2026-04-20',
-                    type: 'IN',
-                    categoryId: 'sales_goods',
-                    method: 'BANK',
-                    amount: 3600.00,
-                    note: 'Jualan pelanggan bayar guna DuitNow QR'
-                },
-                {
-                    id: 'tx-7',
-                    date: '2026-06-01',
-                    type: 'OUT',
-                    categoryId: 'rent_utilities',
-                    method: 'BANK',
-                    amount: 1200.00,
-                    note: 'Bayar sewa kedai bulanan'
-                },
-                {
-                    id: 'tx-8',
-                    date: '2026-08-12',
-                    type: 'OUT',
-                    categoryId: 'staff_wages',
-                    method: 'CASH',
-                    amount: 900.00,
-                    note: 'Gaji dan upah pembantu gerai'
-                },
-                {
-                    id: 'tx-9',
-                    date: '2026-08-25',
-                    type: 'OUT',
-                    categoryId: 'exp_others',
-                    method: 'BANK',
-                    amount: 300.00,
-                    note: 'Bil elektrik TNB, air SADA & plastik bungkus'
-                },
-                {
-                    id: 'tx-10',
-                    date: '2026-09-18',
-                    type: 'OUT',
-                    categoryId: 'owner_drawing',
-                    method: 'CASH',
-                    amount: 500.00,
-                    note: 'Ambil tunai untuk beli barang dapur keluarga'
-                }
-            ]
-        };
-
-        const STORAGE_KEY = 'bukukira-data-v1';
-        const START_WITH_SAMPLE = true;
-        const DEFAULT_STATE = JSON.parse(JSON.stringify(appState));
-        const TRANSIENT_KEYS = ['currentModalType', 'selectedCategoryId', 'selectedPaymentMethod', 'historyFilter'];
-
-        function saveState() {
-            try {
-                const persist = {};
-                Object.keys(appState).forEach(k => { if (!TRANSIENT_KEYS.includes(k)) persist[k] = appState[k]; });
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
-            } catch (e) { }
-        }
-
-        function loadState() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) {
-                    const saved = JSON.parse(raw);
-                    Object.keys(saved).forEach(k => { 
-                        if (!TRANSIENT_KEYS.includes(k)) {
-                            if (k === 'beginningBalances') {
-                                appState.beginningBalances = Object.assign({}, appState.beginningBalances, saved[k]);
-                            } else {
-                                appState[k] = saved[k];
-                            }
-                        }
-                    });
-                } else if (!START_WITH_SAMPLE) {
-                    appState.transactions = [];
-                    appState.closingStockValue = 0;
-                }
-            } catch (e) { }
-        }
-
-        function getCategoryMeta(catId) {
-            const all = [...CATEGORIES.IN, ...CATEGORIES.OUT];
-            return all.find(c => c.id === catId) || all[0];
-        }
-
-        function formatMoney(num) {
-            const val = Number(num) || 0;
-            const sign = val < 0 ? '-' : '';
-            return `${sign}${appState.currency} ${Math.abs(val).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        }
-
-        function computeFinancialStatements() {
-            const bb = appState.beginningBalances || {};
-            let cashBalance = Number(bb.cash) || 0;
-            let bankBalance = Number(bb.bank) || 0;
-
-            let totalRevenue = 0;
-            let revenueByCategory = {};
-            let totalPurchasesCOGS = 0;
-            let totalOperatingExpenses = 0;
-            let expensesByCategory = {};
-
-            let equipmentAsset = Number(bb.equipment) || 0;
-            let loansLiability = Number(bb.loans) || 0;
-            let ownerCapital = Number(bb.capital) || 0;
-            let ownerDrawings = 0;
+            let priorYearsRetainedProfit = 0;
 
             appState.transactions.forEach(tx => {
+                const txYear = parseInt(tx.date.substring(0, 4), 10);
                 const amt = Number(tx.amount) || 0;
                 const meta = getCategoryMeta(tx.categoryId);
 
-                if (tx.type === 'IN') {
-                    if (tx.method === 'CASH') cashBalance += amt;
-                    else bankBalance += amt;
-                } else {
-                    if (tx.method === 'CASH') cashBalance -= amt;
-                    else bankBalance -= amt;
+                if (txYear === selectedYearInt) {
+                    switch (meta.statement) {
+                        case 'PNL_REVENUE':
+                            totalRevenue += amt;
+                            revenueByCategory[meta.label] = (revenueByCategory[meta.label] || 0) + amt;
+                            break;
+                        case 'PNL_COGS':
+                            totalPurchasesCOGS += amt;
+                            break;
+                        case 'PNL_EXPENSE':
+                            totalOperatingExpenses += amt;
+                            expensesByCategory[meta.label] = (expensesByCategory[meta.label] || 0) + amt;
+                            break;
+                        case 'BS_EQUITY_DRAW':
+                            ownerDrawingsThisYear += amt;
+                            break;
+                    }
+                } else if (txYear < selectedYearInt) {
+                    if (meta.statement === 'PNL_REVENUE') priorYearsRetainedProfit += amt;
+                    if (meta.statement === 'PNL_COGS') priorYearsRetainedProfit -= amt;
+                    if (meta.statement === 'PNL_EXPENSE') priorYearsRetainedProfit -= amt;
+                    if (meta.statement === 'BS_EQUITY_DRAW') priorYearsRetainedProfit -= amt;
                 }
 
-                switch (meta.statement) {
-                    case 'PNL_REVENUE':
-                        totalRevenue += amt;
-                        revenueByCategory[meta.label] = (revenueByCategory[meta.label] || 0) + amt;
-                        break;
-                    case 'PNL_COGS':
-                        totalPurchasesCOGS += amt;
-                        break;
-                    case 'PNL_EXPENSE':
-                        totalOperatingExpenses += amt;
-                        expensesByCategory[meta.label] = (expensesByCategory[meta.label] || 0) + amt;
-                        break;
-                    case 'BS_ASSET_ADD':
-                        equipmentAsset += amt;
-                        break;
-                    case 'BS_LIABILITY_ADD':
-                        loansLiability += amt;
-                        break;
-                    case 'BS_LIABILITY_PAY':
-                        loansLiability -= amt;
-                        break;
-                    case 'BS_EQUITY_ADD':
-                        ownerCapital += amt;
-                        break;
-                    case 'BS_EQUITY_DRAW':
-                        ownerDrawings += amt;
-                        break;
+                if (txYear <= selectedYearInt) {
+                    if (tx.type === 'IN') {
+                        if (tx.method === 'CASH') cashBalance += amt;
+                        else bankBalance += amt;
+                    } else {
+                        if (tx.method === 'CASH') cashBalance -= amt;
+                        else bankBalance -= amt;
+                    }
+
+                    if (meta.statement === 'BS_ASSET_ADD') equipmentAsset += amt;
+                    if (meta.statement === 'BS_LIABILITY_ADD') loansLiability += amt;
+                    if (meta.statement === 'BS_LIABILITY_PAY') loansLiability -= amt;
+                    if (meta.statement === 'BS_EQUITY_ADD') ownerCapital += amt;
                 }
             });
 
@@ -1351,20 +954,19 @@
             const grossProfit = totalRevenue - netCOGS;
             const netProfit = grossProfit - totalOperatingExpenses;
 
+            const baseBroughtForward = Number(bb.broughtForward) || 0;
+            const effectiveBroughtForward = baseBroughtForward + priorYearsRetainedProfit;
+            const carriedForward = effectiveBroughtForward + netProfit - ownerDrawingsThisYear;
+
             const landBuilding = Number(bb.landBuilding) || 0;
             const vehicles = Number(bb.vehicles) || 0;
             const otherNonCurrent = Number(bb.otherNonCurrent) || 0;
             const investments = Number(bb.investments) || 0;
-
             const tradeDebtors = Number(bb.tradeDebtors) || 0;
             const otherDebtors = Number(bb.otherDebtors) || 0;
             const otherCurrent = Number(bb.otherCurrent) || 0;
-
             const tradeCreditors = Number(bb.tradeCreditors) || 0;
             const otherCreditors = Number(bb.otherCreditors) || 0;
-
-            const broughtForward = Number(bb.broughtForward) || 0;
-            const carriedForward = broughtForward + netProfit - ownerDrawings;
 
             const nonCurrentAssets = landBuilding + equipmentAsset + vehicles + otherNonCurrent;
             const currentAssets = closingStock + tradeDebtors + otherDebtors + cashBalance + bankBalance + otherCurrent;
@@ -1375,6 +977,7 @@
             const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
 
             return {
+                selectedYear: selectedYearStr,
                 cashBalance,
                 bankBalance,
                 totalMoneyNow: cashBalance + bankBalance,
@@ -1399,8 +1002,8 @@
                 tradeCreditors,
                 otherCreditors,
                 ownerCapital,
-                ownerDrawings,
-                broughtForward,
+                ownerDrawings: ownerDrawingsThisYear,
+                broughtForward: effectiveBroughtForward,
                 carriedForward,
                 nonCurrentAssets,
                 currentAssets,
@@ -1410,9 +1013,31 @@
                 totalLiabilitiesAndEquity
             };
         }
-function renderAll() {
+
+        function populateYearSelector() {
+            const yearSelect = document.getElementById('reportYearSelect');
+            if (!yearSelect) return;
+
+            const yearsSet = new Set();
+            yearsSet.add(appState.financialYear);
+            appState.transactions.forEach(tx => {
+                if (tx.date) yearsSet.add(tx.date.substring(0, 4));
+            });
+
+            const sortedYears = Array.from(yearsSet).sort().reverse();
+            yearSelect.innerHTML = sortedYears.map(y => `
+                <option value="${y}" ${String(y) === String(appState.financialYear) ? 'selected' : ''}>Tahun${y}</option>
+            `).join('');
+        }
+
+        function changeReportYear(selectedYear) {
+            appState.financialYear = selectedYear;
+            renderAll();
+        }
+
+        function renderAll() {
             saveState();
-            const stats = computeFinancialStatements();
+            const stats = computeFinancialStatements(appState.financialYear);
 
             document.getElementById('headerBizName').textContent = appState.businessName;
             document.getElementById('headerOwnerName').textContent = appState.ownerName || 'Pemilik Perniagaan';
@@ -1420,6 +1045,7 @@ function renderAll() {
             document.querySelectorAll('.yearLabel').forEach(el => el.textContent = appState.financialYear);
 
             updateGoogleSheetStatusUI();
+            populateYearSelector();
 
             document.getElementById('homeTotalMoney').textContent = formatMoney(stats.totalMoneyNow);
             document.getElementById('homeCashBalance').textContent = formatMoney(stats.cashBalance);
@@ -1538,7 +1164,7 @@ function renderAll() {
             const revKeys = Object.keys(stats.revenueByCategory);
             document.getElementById('pnlRevenueBreakdown').innerHTML = revKeys.length
                 ? revKeys.map(k => `<div class="flex justify-between"><span>${k}</span><span class="font-semibold">${formatMoney(stats.revenueByCategory[k])}</span></div>`).join('')
-                : `<div class="text-slate-400 italic">Tiada jualan direkodkan lagi</div>`;
+                : `<div class="text-slate-400 italic">Tiada jualan direkodkan lagi bagi tahun ${stats.selectedYear}</div>`;
 
             document.getElementById('pnlPurchases').textContent = formatMoney(stats.totalPurchasesCOGS);
             document.getElementById('pnlClosingStock').textContent = `(${formatMoney(stats.closingStock)})`;
@@ -1905,7 +1531,7 @@ function renderAll() {
             }
 
             try {
-                const stats = computeFinancialStatements();
+                const stats = computeFinancialStatements(appState.financialYear);
                 const enrichedTransactions = appState.transactions.map(tx => {
                     const meta = getCategoryMeta(tx.categoryId);
                     return {
@@ -2026,7 +1652,7 @@ function renderAll() {
         }
 
         function downloadCSVForSheets() {
-            const stats = computeFinancialStatements();
+            const stats = computeFinancialStatements(appState.financialYear);
             const rows = [
                 ['EKSPORT AKAUN PERNIAGAAN BUKUKIRA'],
                 ['Nama Kedai / Syarikat', `"${(appState.businessName || '').replace(/"/g, '""')}"`],
@@ -2234,7 +1860,7 @@ function doGet(e) {
         }
 
         function copySummaryToClipboard() {
-            const s = computeFinancialStatements();
+            const s = computeFinancialStatements(appState.financialYear);
             const text = [
                 `📊 *${appState.businessName.toUpperCase()} - RINGKASAN PENYATA TAHUNAN (${appState.financialYear})*`,
                 appState.businessRegNo ? `No. Pendaftaran: ${appState.businessRegNo}` : '',
@@ -2276,102 +1902,96 @@ function doGet(e) {
             showToast('Ringkasan Tahunan disalin! Boleh tampal terus di WhatsApp.');
         }
 
-async function downloadYearEndPDF() {
-    const btn = document.getElementById('downloadPdfBtn');
-    const originalHTML = btn ? btn.innerHTML : '';
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald-700"></i> <span>Menjana...</span>';
-    }
+        async function downloadYearEndPDF() {
+            const btn = document.getElementById('downloadPdfBtn');
+            const originalHTML = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald-700"></i> <span>Menjana...</span>';
+            }
 
-    showToast('Menyediakan dokumen PDF Penyata Kewangan anda...', 'fa-file-pdf text-emerald-400');
+            showToast('Menyediakan dokumen PDF Penyata Kewangan anda...', 'fa-file-pdf text-emerald-400');
 
-    try {
-        const pnlEl = document.getElementById('statement-pnl');
-        const bsEl = document.getElementById('statement-bs');
-        const wasPnlHidden = pnlEl.classList.contains('hidden');
-        const wasBsHidden = bsEl.classList.contains('hidden');
+            try {
+                const pnlEl = document.getElementById('statement-pnl');
+                const bsEl = document.getElementById('statement-bs');
+                const wasPnlHidden = pnlEl.classList.contains('hidden');
+                const wasBsHidden = bsEl.classList.contains('hidden');
 
-        // Reveal both panels for capture
-        pnlEl.classList.remove('hidden');
-        bsEl.classList.remove('hidden');
+                pnlEl.classList.remove('hidden');
+                bsEl.classList.remove('hidden');
 
-        // Wrapper container with zero margins/padding
-        const wrapper = document.createElement('div');
-        wrapper.style.margin = '0';
-        wrapper.style.padding = '0';
-        wrapper.style.backgroundColor = '#ffffff';
-        wrapper.style.fontFamily = 'Inter, sans-serif';
+                const wrapper = document.createElement('div');
+                wrapper.style.margin = '0';
+                wrapper.style.padding = '0';
+                wrapper.style.backgroundColor = '#ffffff';
+                wrapper.style.fontFamily = 'Inter, sans-serif';
 
-        // Page 1: Untung Rugi
-        const pnlClone = pnlEl.cloneNode(true);
-        pnlClone.querySelectorAll('.no-print').forEach(el => el.remove());
-        pnlClone.style.margin = '0';
-        pnlClone.style.padding = '0px';
-        pnlClone.style.border = 'none';
+                const pnlClone = pnlEl.cloneNode(true);
+                pnlClone.querySelectorAll('.no-print').forEach(el => el.remove());
+                pnlClone.style.margin = '0';
+                pnlClone.style.padding = '0px';
+                pnlClone.style.border = 'none';
 
-        // Page 2: Kunci Kira-Kira
-        const bsClone = bsEl.cloneNode(true);
-        bsClone.querySelectorAll('.no-print').forEach(el => el.remove());
-        bsClone.style.margin = '0';
-        bsClone.style.padding = '0px';
-        bsClone.style.border = 'none';
-        bsClone.style.pageBreakBefore = 'always';
+                const bsClone = bsEl.cloneNode(true);
+                bsClone.querySelectorAll('.no-print').forEach(el => el.remove());
+                bsClone.style.margin = '0';
+                bsClone.style.padding = '0px';
+                bsClone.style.border = 'none';
+                bsClone.style.pageBreakBefore = 'always';
 
-        wrapper.appendChild(pnlClone);
-        wrapper.appendChild(bsClone);
+                wrapper.appendChild(pnlClone);
+                wrapper.appendChild(bsClone);
 
-        // Restore UI view state
-        if (wasPnlHidden) pnlEl.classList.add('hidden');
-        if (wasBsHidden) bsEl.classList.add('hidden');
+                if (wasPnlHidden) pnlEl.classList.add('hidden');
+                if (wasBsHidden) bsEl.classList.add('hidden');
 
-        const safeBizName = (appState.businessName || 'Perniagaan').replace(/[^a-z0-9]/gi, '_');
-        const filename = `${safeBizName}_Penyata_Kewangan_${appState.financialYear}.pdf`;
+                const safeBizName = (appState.businessName || 'Perniagaan').replace(/[^a-z0-9]/gi, '_');
+                const filename = `${safeBizName}_Penyata_Kewangan_${appState.financialYear}.pdf`;
 
-        if (typeof html2pdf !== 'undefined') {
-            const pdfBlob = await html2pdf()
-                .set({
-                    // [top, left, bottom, right] in mm (4mm top keeps it crisp without large whitespace)
-                    margin: [4, 8, 8, 8],
-                    filename: filename,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { 
-                        scale: 2, 
-                        useCORS: true, 
-                        scrollY: 0, 
-                        scrollX: 0 
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                })
-                .from(wrapper)
-                .output('blob');
+                if (typeof html2pdf !== 'undefined') {
+                    const pdfBlob = await html2pdf()
+                        .set({
+                            margin: [4, 8, 8, 8],
+                            filename: filename,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { 
+                                scale: 2, 
+                                useCORS: true, 
+                                scrollY: 0, 
+                                scrollX: 0 
+                            },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        })
+                        .from(wrapper)
+                        .output('blob');
 
-            const blobUrl = URL.createObjectURL(pdfBlob);
-            const downloadLink = document.createElement('a');
-            downloadLink.href = blobUrl;
-            downloadLink.download = filename;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            
-            setTimeout(() => {
-                document.body.removeChild(downloadLink);
-                URL.revokeObjectURL(blobUrl);
-            }, 1000);
+                    const blobUrl = URL.createObjectURL(pdfBlob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = blobUrl;
+                    downloadLink.download = filename;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(downloadLink);
+                        URL.revokeObjectURL(blobUrl);
+                    }, 1000);
 
-            showToast('Fail PDF Penyata Kewangan berjaya dimuat turun!');
-        } else {
-            window.print();
+                    showToast('Fail PDF Penyata Kewangan berjaya dimuat turun!');
+                } else {
+                    window.print();
+                }
+            } catch (err) {
+                console.error(err);
+                window.print();
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
         }
-    } catch (err) {
-        console.error(err);
-        window.print();
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = originalHTML;
-        }
-    }
-}
 
         function showToast(msg, iconClass = 'fa-circle-check text-emerald-400') {
             const banner = document.getElementById('toastBanner');
