@@ -195,7 +195,7 @@
                 <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-3">
                     <div class="flex items-center justify-between">
                         <h2 class="font-extrabold text-lg text-slate-800">Buku Rekod Harian</h2>
-                        <button onclick="openRecordModal('IN')" class="bg-emerald-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm active-scale">
+                        <button onclick="openRecordTypeChooser()" class="bg-emerald-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm active-scale">
                             + Tambah Rekod
                         </button>
                     </div>
@@ -545,6 +545,33 @@
                 <span class="text-[10px] mt-1">Penyata</span>
             </button>
         </nav>
+
+        <!-- MODAL: PILIH JENIS REKOD DARI BUTANG + TAMBAH REKOD -->
+        <div id="recordTypeChooserModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 class="font-extrabold text-base text-slate-900">Tambah Rekod Baharu</h3>
+                        <p class="text-xs text-slate-500 mt-1">Pilih jenis transaksi yang ingin direkodkan.</p>
+                    </div>
+                    <button type="button" onclick="closeRecordTypeChooser()" aria-label="Tutup pilihan jenis rekod" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" onclick="chooseRecordType('IN')" class="active-scale min-h-32 bg-gradient-to-b from-emerald-500 to-emerald-600 text-white p-4 rounded-2xl shadow-md border-b-4 border-emerald-800 flex flex-col items-center justify-center text-center">
+                        <i class="fa-solid fa-plus text-2xl mb-2"></i>
+                        <span class="font-extrabold text-sm">DUIT MASUK</span>
+                        <span class="text-[11px] text-emerald-100 mt-1">Jualan & hasil</span>
+                    </button>
+                    <button type="button" onclick="chooseRecordType('OUT')" class="active-scale min-h-32 bg-gradient-to-b from-rose-500 to-rose-600 text-white p-4 rounded-2xl shadow-md border-b-4 border-rose-800 flex flex-col items-center justify-center text-center">
+                        <i class="fa-solid fa-minus text-2xl mb-2"></i>
+                        <span class="font-extrabold text-sm">DUIT KELUAR</span>
+                        <span class="text-[11px] text-rose-100 mt-1">Belanja, stok & bil</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- MODAL 1: DUIT MASUK / KELUAR -->
         <div id="recordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
@@ -933,8 +960,14 @@
                 { id: 'exp_repair', label: 'Pembaikan dan penyelenggaraan', sub: 'Servis mesin, baiki kedai & kenderaan', icon: 'fa-wrench', color: 'amber', statement: 'PNL_EXPENSE' },
                 { id: 'exp_promo', label: 'Promosi dan iklan', sub: 'Iklan FB/TikTok, banner, bunting & diskaun', icon: 'fa-bullhorn', color: 'pink', statement: 'PNL_EXPENSE' },
                 { id: 'exp_others', label: 'Perbelanjaan-perbelanjaan lain', sub: 'Bil elektrik, air, internet, plastik & alat tulis', icon: 'fa-receipt', color: 'emerald', statement: 'PNL_EXPENSE' },
-                { id: 'buy_equipment', label: 'Beli Mesin / Peralatan Kedai', sub: 'Peti ais, mesin kopi, meja (Harta/Aset)', icon: 'fa-screwdriver-wrench', color: 'purple', statement: 'BS_ASSET_ADD', groupTitle: 'Harta Kedai, Pinjaman & Pemilik' },
-                { id: 'owner_drawing', label: 'Ambil Duit Untuk Sendiri', sub: 'Kegunaan peribadi / belanja keluarga', icon: 'fa-user-check', color: 'pink', statement: 'BS_EQUITY_DRAW' },
+                { id: 'buy_land_building', label: 'Beli Tanah / Bangunan', sub: 'Tanah, kedai atau bangunan perniagaan', icon: 'fa-building', color: 'purple', statement: 'BS_LAND_BUILDING_ADD', groupTitle: 'Pembelian Aset Perniagaan' },
+                { id: 'buy_equipment', label: 'Beli Loji / Mesin / Peralatan', sub: 'Mesin, peti ais, komputer, perabot atau peralatan kedai', icon: 'fa-screwdriver-wrench', color: 'purple', statement: 'BS_EQUIPMENT_ADD' },
+                { id: 'buy_vehicle', label: 'Beli Kenderaan Perniagaan', sub: 'Kereta, van, lori atau motosikal untuk bisnes', icon: 'fa-car-side', color: 'blue', statement: 'BS_VEHICLES_ADD' },
+                { id: 'buy_other_noncurrent', label: 'Beli Aset Bukan Semasa Lain', sub: 'Aset jangka panjang lain untuk perniagaan', icon: 'fa-cubes-stacked', color: 'indigo', statement: 'BS_OTHER_NONCURRENT_ADD' },
+                { id: 'buy_investment', label: 'Beli Pelaburan', sub: 'Saham atau pelaburan perniagaan jangka panjang', icon: 'fa-chart-line', color: 'teal', statement: 'BS_INVESTMENT_ADD' },
+                { id: 'advance_other_debtor', label: 'Pendahuluan / Pinjaman Diberi', sub: 'Wang didahulukan atau dipinjamkan kepada pihak lain', icon: 'fa-hand-holding-dollar', color: 'cyan', statement: 'BS_OTHER_DEBTORS_ADD' },
+                { id: 'prepayment_other_current', label: 'Deposit / Bayaran Prabayar', sub: 'Deposit sewa, insurans prabayar dan aset semasa lain', icon: 'fa-file-invoice-dollar', color: 'amber', statement: 'BS_OTHER_CURRENT_ADD' },
+                { id: 'owner_drawing', label: 'Ambil Duit Untuk Sendiri', sub: 'Kegunaan peribadi / belanja keluarga', icon: 'fa-user-check', color: 'pink', statement: 'BS_EQUITY_DRAW', groupTitle: 'Transaksi Pemilik & Pinjaman' },
                 { id: 'loan_repay', label: 'Bayar Pokok Pinjaman', sub: 'Bayar balik hutang pokok pinjaman bisnes', icon: 'fa-building-columns', color: 'slate', statement: 'BS_LIABILITY_PAY' }
             ]
         };
@@ -1049,9 +1082,16 @@
 
             let cashBalance = Number(bb.cash) || 0;
             let bankBalance = Number(bb.bank) || 0;
+            // Track each balance-sheet asset separately so asset purchases update the correct line.
+            let landBuildingAsset = Number(bb.landBuilding) || 0;
             let equipmentAsset = Number(bb.equipment) || 0;
-            let loansLiability = Number(bb.loans) || 0
-	    let ownerCapital = Number(bb.capital) || 0;
+            let vehiclesAsset = Number(bb.vehicles) || 0;
+            let otherNonCurrentAsset = Number(bb.otherNonCurrent) || 0;
+            let investmentsAsset = Number(bb.investments) || 0;
+            let otherDebtorsAsset = Number(bb.otherDebtors) || 0;
+            let otherCurrentAsset = Number(bb.otherCurrent) || 0;
+            let loansLiability = Number(bb.loans) || 0;
+            let ownerCapital = Number(bb.capital) || 0;
             let ownerDrawingsThisYear = 0;
             
             let priorYearsRetainedProfit = 0;
@@ -1094,7 +1134,14 @@
                         else bankBalance -= amt;
                     }
 
-                    if (meta.statement === 'BS_ASSET_ADD') equipmentAsset += amt;
+                    // Asset-purchase records increase the matching asset balance, not operating expenses.
+                    if (meta.statement === 'BS_LAND_BUILDING_ADD') landBuildingAsset += amt;
+                    if (meta.statement === 'BS_EQUIPMENT_ADD' || meta.statement === 'BS_ASSET_ADD') equipmentAsset += amt; // BS_ASSET_ADD kept for older saved data
+                    if (meta.statement === 'BS_VEHICLES_ADD') vehiclesAsset += amt;
+                    if (meta.statement === 'BS_OTHER_NONCURRENT_ADD') otherNonCurrentAsset += amt;
+                    if (meta.statement === 'BS_INVESTMENT_ADD') investmentsAsset += amt;
+                    if (meta.statement === 'BS_OTHER_DEBTORS_ADD') otherDebtorsAsset += amt;
+                    if (meta.statement === 'BS_OTHER_CURRENT_ADD') otherCurrentAsset += amt;
                     if (meta.statement === 'BS_LIABILITY_ADD') loansLiability += amt;
                     if (meta.statement === 'BS_LIABILITY_PAY') loansLiability -= amt;
                     if (meta.statement === 'BS_EQUITY_ADD') ownerCapital += amt;
@@ -1110,13 +1157,13 @@
             const effectiveBroughtForward = baseBroughtForward + priorYearsRetainedProfit;
             const carriedForward = effectiveBroughtForward + netProfit - ownerDrawingsThisYear;
 
-            const landBuilding = Number(bb.landBuilding) || 0;
-            const vehicles = Number(bb.vehicles) || 0;
-            const otherNonCurrent = Number(bb.otherNonCurrent) || 0;
-            const investments = Number(bb.investments) || 0;
+            const landBuilding = landBuildingAsset;
+            const vehicles = vehiclesAsset;
+            const otherNonCurrent = otherNonCurrentAsset;
+            const investments = investmentsAsset;
             const tradeDebtors = Number(bb.tradeDebtors) || 0;
-            const otherDebtors = Number(bb.otherDebtors) || 0;
-            const otherCurrent = Number(bb.otherCurrent) || 0;
+            const otherDebtors = otherDebtorsAsset;
+            const otherCurrent = otherCurrentAsset;
             const tradeCreditors = Number(bb.tradeCreditors) || 0;
             const otherCreditors = Number(bb.otherCreditors) || 0;
 
@@ -1428,7 +1475,24 @@
             renderHistoryList();
         }
 
+        function openRecordTypeChooser() {
+            const chooser = document.getElementById('recordTypeChooserModal');
+            if (chooser) chooser.classList.remove('hidden');
+        }
+
+        function closeRecordTypeChooser() {
+            const chooser = document.getElementById('recordTypeChooserModal');
+            if (chooser) chooser.classList.add('hidden');
+        }
+
+        function chooseRecordType(type) {
+            if (type !== 'IN' && type !== 'OUT') return;
+            closeRecordTypeChooser();
+            openRecordModal(type);
+        }
+
         function openRecordModal(type) {
+            if (type !== 'IN' && type !== 'OUT') type = 'IN';
             appState.currentModalType = type;
             const list = CATEGORIES[type];
             appState.selectedCategoryId = list[0].id;
@@ -1468,7 +1532,9 @@
             grid.innerHTML = list.map(cat => {
                 const selected = cat.id === appState.selectedCategoryId;
                 const activeClasses = selected
-                    ? 'border-2 border-emerald-600 bg-emerald-50/80 shadow-xs'
+                    ? (appState.currentModalType === 'OUT'
+                        ? 'border-2 border-rose-600 bg-rose-50/80 shadow-xs'
+                        : 'border-2 border-emerald-600 bg-emerald-50/80 shadow-xs')
                     : 'border border-slate-200 bg-white hover:bg-slate-50';
                 const groupHeader = cat.groupTitle
                     ? `<div class="col-span-2 pt-2 first:pt-0 pb-0.5 text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 border-b border-slate-200">${cat.groupTitle}</div>`
