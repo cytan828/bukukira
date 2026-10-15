@@ -2049,93 +2049,71 @@ function doGet(e) {
             showToast('Ringkasan Tahunan disalin! Boleh tampal terus di WhatsApp.');
         }
 
-async function downloadYearEndPDF() {
-    const btn = document.getElementById('downloadPdfBtn');
-    const originalHTML = btn ? btn.innerHTML : '';
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald-700"></i> <span>Menjana...</span>';
-    }
+        async function downloadYearEndPDF() {
+            const btn = document.getElementById('downloadPdfBtn');
+            const originalHTML = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald-700"></i> <span>Menjana...</span>';
+            }
 
-    showToast('Menyediakan dokumen PDF Penyata Kewangan anda...', 'fa-file-pdf text-emerald-400');
+            showToast('Menyediakan dokumen PDF Penyata Kewangan anda...', 'fa-file-pdf text-emerald-400');
 
-    try {
-        const pnlEl = document.getElementById('statement-pnl');
-        const bsEl = document.getElementById('statement-bs');
-        const wasPnlHidden = pnlEl.classList.contains('hidden');
-        const wasBsHidden = bsEl.classList.contains('hidden');
+            try {
+                const pnlEl = document.getElementById('statement-pnl');
+                const bsEl = document.getElementById('statement-bs');
+                const wasPnlHidden = pnlEl.classList.contains('hidden');
+                const wasBsHidden = bsEl.classList.contains('hidden');
 
-        // Reveal both panels for rendering
-        pnlEl.classList.remove('hidden');
-        bsEl.classList.remove('hidden');
+                pnlEl.classList.remove('hidden');
+                bsEl.classList.remove('hidden');
 
-        const wrapper = document.createElement('div');
-        wrapper.style.padding = '0';
-        wrapper.style.backgroundColor = '#ffffff';
-        wrapper.style.fontFamily = 'Inter, sans-serif';
+                const wrapper = document.createElement('div');
+                wrapper.style.padding = '16px';
+                wrapper.style.backgroundColor = '#ffffff';
+                wrapper.style.fontFamily = 'Inter, sans-serif';
 
-        // Page 1: Untung Rugi
-        const pnlClone = pnlEl.cloneNode(true);
-        pnlClone.querySelectorAll('.no-print').forEach(el => el.remove());
-        pnlClone.style.padding = '12px';
-        pnlClone.style.border = 'none';
+                const pnlClone = pnlEl.cloneNode(true);
+                pnlClone.querySelectorAll('.no-print').forEach(el => el.remove());
 
-        // Page 2: Kunci Kira-Kira
-        const bsClone = bsEl.cloneNode(true);
-        bsClone.querySelectorAll('.no-print').forEach(el => el.remove());
-        bsClone.style.padding = '12px';
-        bsClone.style.border = 'none';
-        bsClone.style.pageBreakBefore = 'always';
+                const bsClone = bsEl.cloneNode(true);
+                bsClone.querySelectorAll('.no-print').forEach(el => el.remove());
+                bsClone.style.marginTop = '24px';
+                bsClone.style.pageBreakBefore = 'always';
 
-        wrapper.appendChild(pnlClone);
-        wrapper.appendChild(bsClone);
+                wrapper.appendChild(pnlClone);
+                wrapper.appendChild(bsClone);
 
-        // Restore view states
-        if (wasPnlHidden) pnlEl.classList.add('hidden');
-        if (wasBsHidden) bsEl.classList.add('hidden');
+                if (wasPnlHidden) pnlEl.classList.add('hidden');
+                if (wasBsHidden) bsEl.classList.add('hidden');
 
-        const safeBizName = (appState.businessName || 'Perniagaan').replace(/[^a-z0-9]/gi, '_');
-        const filename = `${safeBizName}_Penyata_Kewangan_${appState.financialYear}.pdf`;
+                const safeBizName = (appState.businessName || 'Perniagaan').replace(/[^a-z0-9]/gi, '_');
+                const filename = `${safeBizName}_Penyata_Kewangan_${appState.financialYear}.pdf`;
 
-        if (typeof html2pdf !== 'undefined') {
-            // Generate as a Blob to prevent Edge/Chrome download permission blocks
-            const pdfBlob = await html2pdf()
-                .set({
-                    margin: 8,
-                    filename: filename,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                })
-                .from(wrapper)
-                .output('blob');
-
-            const blobUrl = URL.createObjectURL(pdfBlob);
-            const downloadLink = document.createElement('a');
-            downloadLink.href = blobUrl;
-            downloadLink.download = filename;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            
-            setTimeout(() => {
-                document.body.removeChild(downloadLink);
-                URL.revokeObjectURL(blobUrl);
-            }, 1000);
-
-            showToast('Fail PDF Penyata Kewangan berjaya dimuat turun!');
-        } else {
-            window.print();
+                if (typeof html2pdf !== 'undefined') {
+                    await html2pdf()
+                        .set({
+                            margin: 10,
+                            filename: filename,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2, useCORS: true },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        })
+                        .from(wrapper)
+                        .save();
+                    showToast('Fail PDF Penyata Kewangan berjaya dimuat turun!');
+                } else {
+                    window.print();
+                }
+            } catch (err) {
+                window.print();
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
         }
-    } catch (err) {
-        console.error(err);
-        window.print();
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = originalHTML;
-        }
-    }
-}
 
         function showToast(msg, iconClass = 'fa-circle-check text-emerald-400') {
             const banner = document.getElementById('toastBanner');
