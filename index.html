@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BukuKira">
-    <!-- PWA: manifest + icons (all paths are relative so it works on GitHub Pages sub-folders) -->
+    <!-- PWA: manifest + icons -->
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -31,7 +31,6 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        /* Hide scrollbars for clean mobile look */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -39,7 +38,6 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* Print Styles for Year-End Financial Statements */
         @media print {
             body {
                 background-color: #ffffff;
@@ -61,16 +59,14 @@
         .active-scale:active {
             transform: scale(0.97);
         }
-        /* Fallback: keep hidden panels/modals hidden even if the Tailwind CDN fails to load */
         .hidden { display: none !important; }
         @media print { .print-only { display: block !important; } }
-        /* Keep header clear of the phone notch / status bar when installed */
         header.sticky { padding-top: calc(1.25rem + env(safe-area-inset-top, 0px)); }
     </style>
 </head>
 <body class="text-slate-800 antialiased selection:bg-emerald-500 selection:text-white">
 
-    <!-- Main App Container (Mobile First, Centered on Desktop) -->
+    <!-- Main App Container -->
     <div class="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-2xl relative print-container border-x border-slate-200">
         
         <!-- Top Header Bar -->
@@ -99,7 +95,7 @@
                     <button onclick="openPWAInfoModal()" title="Pasang di Telefon" class="bg-emerald-800/80 hover:bg-emerald-900 active-scale text-xs font-bold px-2.5 py-2.5 rounded-xl border border-emerald-500/40 flex items-center gap-1.5 shadow-sm transition">
                         <i class="fa-solid fa-mobile-screen-button text-emerald-300 text-sm"></i>
                     </button>
-                    <button onclick="openSettingsModal()" title="Tetapan Kedai & Pemilik" class="bg-emerald-800/80 hover:bg-emerald-900 active-scale text-xs font-bold px-2.5 py-2.5 rounded-xl border border-emerald-500/40 flex items-center gap-1.5 shadow-sm transition">
+                    <button onclick="openSettingsModal()" title="Tetapan Kedai, Pemilik & Baki Awal" class="bg-emerald-800/80 hover:bg-emerald-900 active-scale text-xs font-bold px-2.5 py-2.5 rounded-xl border border-emerald-500/40 flex items-center gap-1.5 shadow-sm transition">
                         <i class="fa-solid fa-gear text-emerald-200 text-sm"></i>
                         <span>Tetapan</span>
                     </button>
@@ -116,7 +112,7 @@
         <!-- MAIN CONTENT AREA -->
         <main class="flex-1 pb-28 px-4 pt-4 overflow-y-auto no-scrollbar">
 
-            <!-- VIEW 1: HOME (SIMPLE RECORDING & SUMMARY) -->
+            <!-- VIEW 1: HOME -->
             <section id="view-home" class="space-y-5">
                 
                 <!-- Google Sheets Live Connection Pill -->
@@ -133,7 +129,7 @@
                     <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
                 </div>
 
-                <!-- Primary Action Buttons -->
+                <!-- Action Buttons -->
                 <div class="grid grid-cols-2 gap-3.5">
                     <button onclick="openRecordModal('IN')" class="active-scale bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white p-5 rounded-3xl shadow-lg shadow-emerald-600/20 flex flex-col items-center justify-center text-center border-b-4 border-emerald-800 transition">
                         <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mb-2.5 shadow-inner">
@@ -152,7 +148,7 @@
                     </button>
                 </div>
 
-                <!-- Where Is My Money Right Now? -->
+                <!-- Cash + Bank Current Position -->
                 <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-4">
                     <div class="flex items-center justify-between">
                         <div>
@@ -182,7 +178,7 @@
                     </div>
                 </div>
 
-                <!-- This Year's Profit Summary Box -->
+                <!-- Profit Summary Box -->
                 <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-3">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Untung Bisnes Tahun <span class="yearLabel">2026</span></h2>
@@ -215,13 +211,11 @@
                             Lihat Semua (<span id="homeTxCount">0</span>)
                         </button>
                     </div>
-                    <div id="homeRecentList" class="space-y-2.5">
-                        <!-- Dynamically populated -->
-                    </div>
+                    <div id="homeRecentList" class="space-y-2.5"></div>
                 </div>
             </section>
 
-            <!-- VIEW 2: HISTORY LOG (DAILY RECORDS) -->
+            <!-- VIEW 2: HISTORY LOG -->
             <section id="view-history" class="space-y-4 hidden">
                 <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-3">
                     <div class="flex items-center justify-between">
@@ -231,7 +225,6 @@
                         </button>
                     </div>
 
-                    <!-- Search & Filter Bar -->
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input id="historySearch" oninput="renderHistoryList()" type="text" placeholder="Cari nota atau kategori..." class="w-full pl-10 pr-4 py-3 bg-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -244,13 +237,10 @@
                     </div>
                 </div>
 
-                <!-- Transaction List Container -->
-                <div id="historyListContainer" class="space-y-2.5">
-                    <!-- Dynamically populated -->
-                </div>
+                <div id="historyListContainer" class="space-y-2.5"></div>
             </section>
 
-            <!-- VIEW 3: YEAR-END FINANCIAL STATEMENTS -->
+            <!-- VIEW 3: FINANCIAL STATEMENTS -->
             <section id="view-reports" class="space-y-5 hidden">
                 
                 <!-- Explainer & Actions Card -->
@@ -262,20 +252,25 @@
                             </span>
                             <h2 class="text-lg font-extrabold leading-snug">Sedia Untuk LHDN, Pinjaman Bank, atau SSM</h2>
                             <p class="text-xs text-emerald-100 mt-1 leading-relaxed">
-                                Catatan harian anda telah ditukar menjadi penyata akaun rasmi secara automatik.
+                                Catatan harian anda digabungkan dengan baki awal perniagaan secara automatik.
                             </p>
                         </div>
                     </div>
 
-                    <!-- Year-End Stock Box -->
-                    <div class="bg-white/10 rounded-2xl p-3.5 border border-white/15 flex items-center justify-between gap-3">
-                        <div class="text-xs">
-                            <span class="font-bold block text-emerald-200">Baki Stok Belum Terjual (Akhir Tahun):</span>
-                            <span class="text-white/80">Jika masih ada baki barang niaga di rak pada akhir tahun, masukkan nilainya di sini:</span>
+                    <!-- Helpers: Stock & Beginning Balance Quick Access -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-white/10 rounded-2xl p-3 border border-white/15 flex flex-col justify-between">
+                            <span class="font-bold text-xs text-emerald-200 block mb-1">Stok Akhir Tahun:</span>
+                            <button onclick="openClosingStockModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold text-xs px-3 py-2 rounded-xl active-scale shadow text-center">
+                                <span id="closingStockBtnText">RM 0.00</span> <i class="fa-solid fa-pen ml-1 text-[10px]"></i>
+                            </button>
                         </div>
-                        <button onclick="openClosingStockModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold text-xs px-3.5 py-2.5 rounded-xl shrink-0 active-scale shadow">
-                            <span id="closingStockBtnText">RM 0</span> <i class="fa-solid fa-pen ml-1"></i>
-                        </button>
+                        <div class="bg-white/10 rounded-2xl p-3 border border-white/15 flex flex-col justify-between">
+                            <span class="font-bold text-xs text-emerald-200 block mb-1">Baki Awal Akaun:</span>
+                            <button onclick="openBeginningBalancesModal()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold text-xs px-3 py-2 rounded-xl active-scale shadow text-center border border-emerald-300/40">
+                                <i class="fa-solid fa-sliders mr-1 text-[10px]"></i> Edit Baki Awal
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Print / Export Buttons -->
@@ -400,12 +395,18 @@
                         <p class="text-xs text-slate-500">Pada 31 Disember <span class="yearLabel">2026</span></p>
                     </div>
 
-                    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-900 flex items-center gap-2.5 no-print">
-                        <i class="fa-solid fa-scale-balanced text-blue-600 text-base"></i>
-                        <span><b>Penerangan Mudah:</b> Susunan Kunci Kira-Kira mengikut format rasmi standard perakaunan (Aset Bukan Semasa, Aset Semasa, Liabiliti, dan Ekuiti Pemilik).</span>
+                    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-900 flex items-center justify-between no-print">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-scale-balanced text-blue-600 text-base"></i>
+                            <span>Susunan Kunci Kira-Kira mengikut format standard perakaunan rasmi.</span>
+                        </div>
+                        <button onclick="openBeginningBalancesModal()" class="text-[11px] bg-white border border-blue-300 text-blue-800 font-bold px-2.5 py-1 rounded-lg shrink-0 hover:bg-blue-50">
+                            Edit Baki Awal
+                        </button>
                     </div>
 
                     <div class="space-y-4 text-sm">
+                        <!-- ASET BUKAN SEMASA -->
                         <div>
                             <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
                                 <span>ASET BUKAN SEMASA :</span>
@@ -440,6 +441,7 @@
                             </div>
                         </div>
 
+                        <!-- ASET SEMASA -->
                         <div>
                             <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
                                 <span>ASET SEMASA :</span>
@@ -476,11 +478,13 @@
                             </div>
                         </div>
 
+                        <!-- JUMLAH ASET -->
                         <div class="border-y-2 border-slate-900 py-2 px-3 flex justify-between items-center bg-slate-50 rounded-xl">
                             <span class="font-extrabold text-xs text-slate-950">JUMLAH ASET</span>
                             <span id="bsTotalAssets" class="font-extrabold text-sm text-slate-950">RM 0.00</span>
                         </div>
 
+                        <!-- LIABILITI -->
                         <div>
                             <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
                                 <span>LIABILITI :</span>
@@ -505,6 +509,7 @@
                             </div>
                         </div>
 
+                        <!-- EKUITI PEMILIK -->
                         <div>
                             <div class="font-extrabold text-slate-900 bg-slate-100 px-3 py-2 rounded-xl text-xs">
                                 <span>EKUITI PEMILIK :</span>
@@ -526,17 +531,19 @@
                                     <span>Ambilan/pendahuluan (bersih)</span>
                                     <span id="bsDrawings" class="font-bold">(RM 0.00)</span>
                                 </div>
-                                <div class="flex justify-between items-center pt-1 border-t border-slate-200">
-            <span class="font-semibold text-slate-800">Baki akaun semasa hantar hadapan</span>
-            <span id="bsCarriedForward" class="font-bold text-slate-900">RM 0.00</span>
-        </div>
+                                <div class="flex justify-between items-center pt-1.5 border-t border-slate-300 font-semibold text-slate-900">
+                                    <span>Baki akaun semasa hantar hadapan</span>
+                                    <span id="bsCarriedForward" class="font-extrabold">RM 0.00</span>
+                                </div>
                             </div>
+                            <!-- JUMLAH EKUITI PEMILIK (Sama format border dengan JUMLAH ASET) -->
                             <div class="border-y-2 border-slate-900 py-2 px-3 flex justify-between items-center bg-slate-50 rounded-xl mt-3">
-    <span class="font-extrabold text-xs text-slate-950">JUMLAH EKUITI PEMILIK</span>
-    <span id="bsTotalEquityFooter" class="font-extrabold text-sm text-slate-950">RM 0.00</span>
-</div>
+                                <span class="font-extrabold text-xs text-slate-950">JUMLAH EKUITI PEMILIK</span>
+                                <span id="bsTotalEquityFooter" class="font-extrabold text-sm text-slate-950">RM 0.00</span>
+                            </div>
                         </div>
 
+                        <!-- Balance Check Badge (Hidden from print so statement fits 1 page) -->
                         <div class="no-print bg-slate-900 text-white p-3.5 rounded-2xl flex items-center justify-between text-xs">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
@@ -548,6 +555,7 @@
                             <span id="bsCheckAmount" class="font-extrabold text-sm text-emerald-400">SEIMBANG</span>
                         </div>
 
+                        <!-- Owner Sign-Off Footer -->
                         <div class="pt-4 border-t border-slate-200 flex items-end justify-between text-[11px] text-slate-500">
                             <div>
                                 <span class="font-bold text-slate-700 block">Disediakan & Disahkan Oleh Pemilik:</span>
@@ -708,12 +716,125 @@
                             <input id="settingYear" type="number" inputmode="numeric" min="2000" max="2100" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </label>
                     </div>
+
+                    <!-- Shortcut to Beginning Balances -->
+                    <button type="button" onclick="closeSettingsModal(); openBeginningBalancesModal();" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs flex items-center justify-center gap-2 border border-slate-200">
+                        <i class="fa-solid fa-sliders text-emerald-600"></i>
+                        <span>Tetapan Baki Awal Kunci Kira-Kira</span>
+                    </button>
                 </div>
+
                 <button type="button" onclick="saveSettings()" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg active-scale transition">Simpan Tetapan</button>
+                
                 <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
                     <button type="button" onclick="if (confirm('Pulihkan data contoh? Semua rekod semasa akan diganti.')) { closeSettingsModal(); loadSampleBusinessData(); }" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">Guna Data Contoh</button>
                     <button type="button" onclick="if (confirm('Padam SEMUA rekod? Tindakan ini tidak boleh diundur.')) clearAllBusinessData()" class="py-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs">Padam Semua Rekod</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- MODAL 3B: TETAPAN BAKI AWAL SETIAP AKAUN KUNCI KIRA-KIRA -->
+        <div id="beginningBalancesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 class="font-extrabold text-base text-slate-900">Baki Awal Akaun (Bawa Hadapan)</h3>
+                        <p class="text-[11px] text-slate-500">Baki awal pada permulaan tahun kewangan ini</p>
+                    </div>
+                    <button type="button" onclick="closeBeginningBalancesModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg uppercase tracking-wider text-[10px]">
+                        1. Aset Bukan Semasa (Baki Awal)
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Tanah & Bangunan</span>
+                            <input id="bb_landBuilding" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Loji & Jentera</span>
+                            <input id="bb_equipment" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Kenderaan</span>
+                            <input id="bb_vehicles" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Aset B. Semasa Lain</span>
+                            <input id="bb_otherNonCurrent" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="text-slate-600 block mb-0.5">Pelaburan</span>
+                        <input id="bb_investments" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                    </label>
+
+                    <div class="font-extrabold text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg uppercase tracking-wider text-[10px] mt-2">
+                        2. Aset Semasa (Baki Awal)
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Penghutang Niaga</span>
+                            <input id="bb_tradeDebtors" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Penghutang Lain</span>
+                            <input id="bb_otherDebtors" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Aset Semasa Lain</span>
+                            <input id="bb_otherCurrent" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Baki Awal Tunai</span>
+                            <input id="bb_cash" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="text-slate-600 block mb-0.5">Baki Awal Bank / Akaun Semasa</span>
+                        <input id="bb_bank" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                    </label>
+
+                    <div class="font-extrabold text-rose-800 bg-rose-50 px-2.5 py-1 rounded-lg uppercase tracking-wider text-[10px] mt-2">
+                        3. Liabiliti (Baki Awal)
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Pinjaman / Overdraf</span>
+                            <input id="bb_loans" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Pemiutang Dagangan</span>
+                            <input id="bb_tradeCreditors" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="text-slate-600 block mb-0.5">Pemiutang Lain</span>
+                        <input id="bb_otherCreditors" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                    </label>
+
+                    <div class="font-extrabold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg uppercase tracking-wider text-[10px] mt-2">
+                        4. Ekuiti Pemilik (Baki Bawa Hadapan)
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Akaun Modal Asal</span>
+                            <input id="bb_capital" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                        <label class="block">
+                            <span class="text-slate-600 block mb-0.5">Akaun Semasa B. Hadapan</span>
+                            <input id="bb_broughtForward" type="number" step="0.01" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">
+                        </label>
+                    </div>
+                </div>
+
+                <button type="button" onclick="saveBeginningBalances()" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg active-scale transition">
+                    Simpan Baki Awal
+                </button>
             </div>
         </div>
 
@@ -781,7 +902,6 @@
                     </button>
                 </div>
 
-                <!-- Option 1: 1-Tap CSV / Excel Download -->
                 <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2.5">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-extrabold text-emerald-950">Cara 1: Muat Turun Terus (Tanpa Setup)</span>
@@ -796,7 +916,6 @@
                     </button>
                 </div>
 
-                <!-- Option 2: Live Google Sheets Webhook Auto-Sync -->
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-extrabold text-slate-900">Cara 2: Auto-Simpan ke Google Sheet Anda</span>
@@ -1009,6 +1128,25 @@
             currency: 'RM',
             financialYear: '2026',
             closingStockValue: 650.00,
+            
+            beginningBalances: {
+                landBuilding: 0.00,
+                equipment: 0.00,
+                vehicles: 0.00,
+                otherNonCurrent: 0.00,
+                investments: 0.00,
+                tradeDebtors: 0.00,
+                otherDebtors: 0.00,
+                otherCurrent: 0.00,
+                cash: 0.00,
+                bank: 0.00,
+                loans: 0.00,
+                tradeCreditors: 0.00,
+                otherCreditors: 0.00,
+                capital: 0.00,
+                broughtForward: 0.00
+            },
+
             googleSheetWebhookUrl: '',
             lastSyncedAt: null,
             currentModalType: 'IN',
@@ -1127,7 +1265,15 @@
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (raw) {
                     const saved = JSON.parse(raw);
-                    Object.keys(saved).forEach(k => { if (!TRANSIENT_KEYS.includes(k)) appState[k] = saved[k]; });
+                    Object.keys(saved).forEach(k => { 
+                        if (!TRANSIENT_KEYS.includes(k)) {
+                            if (k === 'beginningBalances') {
+                                appState.beginningBalances = Object.assign({}, appState.beginningBalances, saved[k]);
+                            } else {
+                                appState[k] = saved[k];
+                            }
+                        }
+                    });
                 } else if (!START_WITH_SAMPLE) {
                     appState.transactions = [];
                     appState.closingStockValue = 0;
@@ -1143,20 +1289,23 @@
         function formatMoney(num) {
             const val = Number(num) || 0;
             const sign = val < 0 ? '-' : '';
-            return `${sign}${appState.currency}${Math.abs(val).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            return `${sign}${appState.currency} ${Math.abs(val).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
 
         function computeFinancialStatements() {
-            let cashBalance = 0;
-            let bankBalance = 0;
+            const bb = appState.beginningBalances || {};
+            let cashBalance = Number(bb.cash) || 0;
+            let bankBalance = Number(bb.bank) || 0;
+
             let totalRevenue = 0;
             let revenueByCategory = {};
             let totalPurchasesCOGS = 0;
             let totalOperatingExpenses = 0;
             let expensesByCategory = {};
-            let equipmentAsset = 0;
-            let loansLiability = 0;
-            let ownerCapital = 0;
+
+            let equipmentAsset = Number(bb.equipment) || 0;
+            let loansLiability = Number(bb.loans) || 0;
+            let ownerCapital = Number(bb.capital) || 0;
             let ownerDrawings = 0;
 
             appState.transactions.forEach(tx => {
@@ -1205,9 +1354,29 @@
             const netCOGS = totalPurchasesCOGS - closingStock;
             const grossProfit = totalRevenue - netCOGS;
             const netProfit = grossProfit - totalOperatingExpenses;
-            const totalAssets = cashBalance + bankBalance + closingStock + equipmentAsset;
-            const totalEquity = ownerCapital + netProfit - ownerDrawings;
-            const totalLiabilitiesAndEquity = loansLiability + totalEquity;
+
+            const landBuilding = Number(bb.landBuilding) || 0;
+            const vehicles = Number(bb.vehicles) || 0;
+            const otherNonCurrent = Number(bb.otherNonCurrent) || 0;
+            const investments = Number(bb.investments) || 0;
+
+            const tradeDebtors = Number(bb.tradeDebtors) || 0;
+            const otherDebtors = Number(bb.otherDebtors) || 0;
+            const otherCurrent = Number(bb.otherCurrent) || 0;
+
+            const tradeCreditors = Number(bb.tradeCreditors) || 0;
+            const otherCreditors = Number(bb.otherCreditors) || 0;
+
+            const broughtForward = Number(bb.broughtForward) || 0;
+            const carriedForward = broughtForward + netProfit - ownerDrawings;
+
+            const nonCurrentAssets = landBuilding + equipmentAsset + vehicles + otherNonCurrent;
+            const currentAssets = closingStock + tradeDebtors + otherDebtors + cashBalance + bankBalance + otherCurrent;
+            const totalAssets = nonCurrentAssets + investments + currentAssets;
+
+            const totalLiabilities = loansLiability + tradeCreditors + otherCreditors;
+            const totalEquity = ownerCapital + carriedForward;
+            const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
 
             return {
                 cashBalance,
@@ -1222,17 +1391,30 @@
                 totalOperatingExpenses,
                 expensesByCategory,
                 netProfit,
+                landBuilding,
                 equipmentAsset,
+                vehicles,
+                otherNonCurrent,
+                investments,
+                tradeDebtors,
+                otherDebtors,
+                otherCurrent,
                 loansLiability,
+                tradeCreditors,
+                otherCreditors,
                 ownerCapital,
                 ownerDrawings,
+                broughtForward,
+                carriedForward,
+                nonCurrentAssets,
+                currentAssets,
                 totalAssets,
+                totalLiabilities,
                 totalEquity,
                 totalLiabilitiesAndEquity
             };
         }
-
-        function renderAll() {
+function renderAll() {
             saveState();
             const stats = computeFinancialStatements();
 
@@ -1355,6 +1537,7 @@
 
             document.getElementById('closingStockBtnText').textContent = formatMoney(stats.closingStock);
 
+            // P&L
             document.getElementById('pnlTotalRevenue').textContent = formatMoney(stats.totalRevenue);
             const revKeys = Object.keys(stats.revenueByCategory);
             document.getElementById('pnlRevenueBreakdown').innerHTML = revKeys.length
@@ -1390,46 +1573,42 @@
                 finalLabel.textContent = 'RUGI BERSIH TAHUN INI';
             }
 
-            const landBuilding = 0, vehicles = 0, otherNonCurrent = 0, investments = 0;
-            const tradeDebtors = 0, otherDebtors = 0, otherCurrent = 0;
-            const tradeCreditors = 0, otherCreditors = 0, broughtForward = 0;
-            const nonCurrentAssets = landBuilding + stats.equipmentAsset + vehicles + otherNonCurrent;
-            const currentAssets = stats.closingStock + tradeDebtors + otherDebtors + stats.cashBalance + stats.bankBalance + otherCurrent;
+            // Balance Sheet
             const setBS = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = formatMoney(v); };
 
-            setBS('bsLandBuilding', landBuilding);
+            setBS('bsLandBuilding', stats.landBuilding);
             setBS('bsEquipment', stats.equipmentAsset);
-            setBS('bsVehicles', vehicles);
-            setBS('bsOtherNonCurrent', otherNonCurrent);
-            setBS('bsTotalNonCurrentAssetsFooter', nonCurrentAssets);
-            setBS('bsInvestments', investments);
+            setBS('bsVehicles', stats.vehicles);
+            setBS('bsOtherNonCurrent', stats.otherNonCurrent);
+            setBS('bsTotalNonCurrentAssetsFooter', stats.nonCurrentAssets);
+            setBS('bsInvestments', stats.investments);
 
             setBS('bsStock', stats.closingStock);
-            setBS('bsTradeDebtors', tradeDebtors);
-            setBS('bsOtherDebtors', otherDebtors);
+            setBS('bsTradeDebtors', stats.tradeDebtors);
+            setBS('bsOtherDebtors', stats.otherDebtors);
             setBS('bsCash', stats.cashBalance);
             setBS('bsBank', stats.bankBalance);
-            setBS('bsOtherCurrent', otherCurrent);
-            setBS('bsTotalCurrentAssetsFooter', currentAssets);
+            setBS('bsOtherCurrent', stats.otherCurrent);
+            setBS('bsTotalCurrentAssetsFooter', stats.currentAssets);
 
             setBS('bsTotalAssets', stats.totalAssets);
 
             setBS('bsLoans', stats.loansLiability);
-            setBS('bsTradeCreditors', tradeCreditors);
-            setBS('bsOtherCreditors', otherCreditors);
-            setBS('bsTotalLiabilitiesFooter', stats.loansLiability + tradeCreditors + otherCreditors);
+            setBS('bsTradeCreditors', stats.tradeCreditors);
+            setBS('bsOtherCreditors', stats.otherCreditors);
+            setBS('bsTotalLiabilitiesFooter', stats.totalLiabilities);
 
             setBS('bsCapital', stats.ownerCapital);
-            setBS('bsBroughtForward', broughtForward);
+            setBS('bsBroughtForward', stats.broughtForward);
             setBS('bsNetProfit', stats.netProfit);
             document.getElementById('bsDrawings').textContent = `(${formatMoney(stats.ownerDrawings)})`;
+            setBS('bsCarriedForward', stats.carriedForward);
             setBS('bsTotalEquityFooter', stats.totalEquity);
 
-            const totalLiabilitiesAndEquity = stats.loansLiability + stats.totalEquity;
-            const isBalanced = Math.abs(stats.totalAssets - totalLiabilitiesAndEquity) < 0.01;
+            const isBalanced = Math.abs(stats.totalAssets - stats.totalLiabilitiesAndEquity) < 0.01;
             document.getElementById('bsCheckAmount').textContent = isBalanced
                 ? `SEIMBANG (${formatMoney(stats.totalAssets)})`
-                : formatMoney(totalLiabilitiesAndEquity);
+                : formatMoney(stats.totalLiabilitiesAndEquity);
         }
 
         function switchTab(tabName) {
@@ -1610,6 +1789,64 @@
             }
         }
 
+        function openBeginningBalancesModal() {
+            const bb = appState.beginningBalances || {};
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = typeof val !== 'undefined' ? val : 0;
+            };
+            setVal('bb_landBuilding', bb.landBuilding);
+            setVal('bb_equipment', bb.equipment);
+            setVal('bb_vehicles', bb.vehicles);
+            setVal('bb_otherNonCurrent', bb.otherNonCurrent);
+            setVal('bb_investments', bb.investments);
+            setVal('bb_tradeDebtors', bb.tradeDebtors);
+            setVal('bb_otherDebtors', bb.otherDebtors);
+            setVal('bb_otherCurrent', bb.otherCurrent);
+            setVal('bb_cash', bb.cash);
+            setVal('bb_bank', bb.bank);
+            setVal('bb_loans', bb.loans);
+            setVal('bb_tradeCreditors', bb.tradeCreditors);
+            setVal('bb_otherCreditors', bb.otherCreditors);
+            setVal('bb_capital', bb.capital);
+            setVal('bb_broughtForward', bb.broughtForward);
+
+            document.getElementById('beginningBalancesModal').classList.remove('hidden');
+        }
+
+        function closeBeginningBalancesModal() {
+            document.getElementById('beginningBalancesModal').classList.add('hidden');
+        }
+
+        function saveBeginningBalances() {
+            const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+            appState.beginningBalances = {
+                landBuilding: getVal('bb_landBuilding'),
+                equipment: getVal('bb_equipment'),
+                vehicles: getVal('bb_vehicles'),
+                otherNonCurrent: getVal('bb_otherNonCurrent'),
+                investments: getVal('bb_investments'),
+                tradeDebtors: getVal('bb_tradeDebtors'),
+                otherDebtors: getVal('bb_otherDebtors'),
+                otherCurrent: getVal('bb_otherCurrent'),
+                cash: getVal('bb_cash'),
+                bank: getVal('bb_bank'),
+                loans: getVal('bb_loans'),
+                tradeCreditors: getVal('bb_tradeCreditors'),
+                otherCreditors: getVal('bb_otherCreditors'),
+                capital: getVal('bb_capital'),
+                broughtForward: getVal('bb_broughtForward')
+            };
+
+            closeBeginningBalancesModal();
+            renderAll();
+            showToast('Baki Awal Kunci Kira-Kira berjaya dikemas kini!');
+
+            if (appState.googleSheetWebhookUrl) {
+                pushAllDataToGoogleSheet(true);
+            }
+        }
+
         function openSheetsModal() {
             document.getElementById('sheetWebhookInput').value = appState.googleSheetWebhookUrl || '';
             updateGoogleSheetStatusUI();
@@ -1701,6 +1938,7 @@
                     currency: appState.currency,
                     financialYear: appState.financialYear,
                     closingStockValue: appState.closingStockValue,
+                    beginningBalances: appState.beginningBalances,
                     transactions: enrichedTransactions,
                     summary: {
                         totalRevenue: stats.totalRevenue,
@@ -1770,6 +2008,9 @@
                     if (typeof data.closingStockValue !== 'undefined') {
                         appState.closingStockValue = Number(data.closingStockValue) || 0;
                     }
+                    if (data.beginningBalances) {
+                        appState.beginningBalances = Object.assign({}, appState.beginningBalances, data.beginningBalances);
+                    }
                     const now = new Date();
                     appState.lastSyncedAt = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     renderAll();
@@ -1835,31 +2076,32 @@
                 ['3. KUNCI KIRA-KIRA AUTOMATIK (PENYATA KEDUDUKAN KEWANGAN)'],
                 ['Butiran', 'Jumlah (' + appState.currency + ')'],
                 ['ASET BUKAN SEMASA :', ''],
-                ['Tanah dan bangunan', '0.00'],
+                ['Tanah dan bangunan', stats.landBuilding.toFixed(2)],
                 ['Loji dan jentera', stats.equipmentAsset.toFixed(2)],
-                ['Kenderaan', '0.00'],
-                ['Aset bukan semasa lain', '0.00'],
-                ['JUMLAH ASET BUKAN SEMASA :', stats.equipmentAsset.toFixed(2)],
-                ['Pelaburan', '0.00'],
+                ['Kenderaan', stats.vehicles.toFixed(2)],
+                ['Aset bukan semasa lain', stats.otherNonCurrent.toFixed(2)],
+                ['JUMLAH ASET BUKAN SEMASA :', stats.nonCurrentAssets.toFixed(2)],
+                ['Pelaburan', stats.investments.toFixed(2)],
                 ['ASET SEMASA :', ''],
                 ['Inventori', stats.closingStock.toFixed(2)],
-                ['Penghutang perdagangan', '0.00'],
-                ['Penghutang lain', '0.00'],
+                ['Penghutang perdagangan', stats.tradeDebtors.toFixed(2)],
+                ['Penghutang lain', stats.otherDebtors.toFixed(2)],
                 ['Baki tunai', stats.cashBalance.toFixed(2)],
                 ['Baki dalam bank', stats.bankBalance.toFixed(2)],
-                ['Aset semasa lain', '0.00'],
-                ['JUMLAH ASET SEMASA', (stats.closingStock + stats.cashBalance + stats.bankBalance).toFixed(2)],
+                ['Aset semasa lain', stats.otherCurrent.toFixed(2)],
+                ['JUMLAH ASET SEMASA', stats.currentAssets.toFixed(2)],
                 ['JUMLAH ASET', stats.totalAssets.toFixed(2)],
                 ['LIABILITI :', ''],
                 ['Pinjaman dan overdraf', stats.loansLiability.toFixed(2)],
-                ['Pemiutang dagangan', '0.00'],
-                ['Pemiutang lain', '0.00'],
-                ['JUMLAH LIABILITI', stats.loansLiability.toFixed(2)],
+                ['Pemiutang dagangan', stats.tradeCreditors.toFixed(2)],
+                ['Pemiutang lain', stats.otherCreditors.toFixed(2)],
+                ['JUMLAH LIABILITI', stats.totalLiabilities.toFixed(2)],
                 ['EKUITI PEMILIK :', ''],
                 ['Akaun modal', stats.ownerCapital.toFixed(2)],
-                ['Baki akaun semasa bawa hadapan', '0.00'],
+                ['Baki akaun semasa bawa hadapan', stats.broughtForward.toFixed(2)],
                 ['Untung/rugi tahun semasa', stats.netProfit.toFixed(2)],
                 ['Ambilan/pendahuluan (bersih)', (-stats.ownerDrawings).toFixed(2)],
+                ['Baki akaun semasa hantar hadapan', stats.carriedForward.toFixed(2)],
                 ['JUMLAH EKUITI PEMILIK', stats.totalEquity.toFixed(2)]
             ];
 
@@ -1900,28 +2142,8 @@ function doPost(e) {
   repSheet.appendRow(['UNTUNG BERSIH', s.netProfit]);
   repSheet.appendRow(['', '']);
   repSheet.appendRow(['--- KUNCI KIRA-KIRA ---', 'Jumlah (' + data.currency + ')']);
-  repSheet.appendRow(['ASET BUKAN SEMASA :', '']);
-  repSheet.appendRow(['Tanah dan bangunan', 0]);
-  repSheet.appendRow(['Loji dan jentera', s.equipmentAsset]);
-  repSheet.appendRow(['Kenderaan', 0]);
-  repSheet.appendRow(['Aset bukan semasa lain', 0]);
-  repSheet.appendRow(['JUMLAH ASET BUKAN SEMASA :', s.equipmentAsset]);
-  repSheet.appendRow(['Pelaburan', 0]);
-  repSheet.appendRow(['ASET SEMASA :', '']);
-  repSheet.appendRow(['Inventori', s.closingStock]);
-  repSheet.appendRow(['Penghutang perdagangan', 0]);
-  repSheet.appendRow(['Penghutang lain', 0]);
-  repSheet.appendRow(['Baki tunai', s.cashBalance]);
-  repSheet.appendRow(['Baki dalam bank', s.bankBalance]);
-  repSheet.appendRow(['Aset semasa lain', 0]);
-  repSheet.appendRow(['JUMLAH ASET SEMASA', (s.closingStock || 0) + (s.cashBalance || 0) + (s.bankBalance || 0)]);
   repSheet.appendRow(['JUMLAH ASET', s.totalAssets]);
-  repSheet.appendRow(['LIABILITI :', '']);
-  repSheet.appendRow(['Pinjaman dan overdraf', s.loansLiability]);
-  repSheet.appendRow(['Pemiutang dagangan', 0]);
-  repSheet.appendRow(['Pemiutang lain', 0]);
   repSheet.appendRow(['JUMLAH LIABILITI', s.loansLiability]);
-  repSheet.appendRow(['EKUITI PEMILIK :', '']);
   repSheet.appendRow(['JUMLAH EKUITI PEMILIK', s.totalEquity]);
 
   return ContentService.createTextOutput(JSON.stringify({ status: 'ok' })).setMimeType(ContentService.MimeType.JSON);
@@ -2000,6 +2222,11 @@ function doGet(e) {
         function clearAllBusinessData() {
             appState.transactions = [];
             appState.closingStockValue = 0;
+            appState.beginningBalances = {
+                landBuilding: 0, equipment: 0, vehicles: 0, otherNonCurrent: 0, investments: 0,
+                tradeDebtors: 0, otherDebtors: 0, otherCurrent: 0, cash: 0, bank: 0,
+                loans: 0, tradeCreditors: 0, otherCreditors: 0, capital: 0, broughtForward: 0
+            };
             closeSettingsModal();
             renderAll();
             showToast('Semua rekod telah dipadam. Sedia untuk rekod baharu anda!');
@@ -2026,22 +2253,22 @@ function doGet(e) {
                 ``,
                 `*KUNCI KIRA-KIRA (PADA 31 DIS ${appState.financialYear}):*`,
                 `*ASET BUKAN SEMASA:*`,
-                `• Loji dan jentera: ${formatMoney(s.equipmentAsset)}`,
-                `• Jumlah Aset Bukan Semasa: ${formatMoney(s.equipmentAsset)}`,
+                `• Jumlah Aset Bukan Semasa: ${formatMoney(s.nonCurrentAssets)}`,
                 `*ASET SEMASA:*`,
                 `• Inventori: ${formatMoney(s.closingStock)}`,
                 `• Baki tunai: ${formatMoney(s.cashBalance)}`,
                 `• Baki dalam bank: ${formatMoney(s.bankBalance)}`,
-                `• Jumlah Aset Semasa: ${formatMoney(s.closingStock + s.cashBalance + s.bankBalance)}`,
+                `• Jumlah Aset Semasa: ${formatMoney(s.currentAssets)}`,
                 `• *JUMLAH ASET: ${formatMoney(s.totalAssets)}*`,
                 `*LIABILITI:*`,
-                `• Pinjaman dan overdraf: ${formatMoney(s.loansLiability)}`,
-                `• Jumlah Liabiliti: ${formatMoney(s.loansLiability)}`,
+                `• Jumlah Liabiliti: ${formatMoney(s.totalLiabilities)}`,
                 `*EKUITI PEMILIK:*`,
                 `• Akaun modal: ${formatMoney(s.ownerCapital)}`,
+                `• Baki akaun semasa bawa hadapan: ${formatMoney(s.broughtForward)}`,
                 `• Untung/rugi tahun semasa: ${formatMoney(s.netProfit)}`,
                 `• Ambilan/pendahuluan (bersih): (${formatMoney(s.ownerDrawings)})`,
-                `• Jumlah Ekuiti Pemilik: ${formatMoney(s.totalEquity)}`
+                `• Baki akaun semasa hantar hadapan: ${formatMoney(s.carriedForward)}`,
+                `• *JUMLAH EKUITI PEMILIK: ${formatMoney(s.totalEquity)}*`
             ].join('\n');
 
             const textarea = document.createElement('textarea');
@@ -2073,16 +2300,19 @@ function doGet(e) {
                 bsEl.classList.remove('hidden');
 
                 const wrapper = document.createElement('div');
-                wrapper.style.padding = '16px';
+                wrapper.style.padding = '0';
                 wrapper.style.backgroundColor = '#ffffff';
                 wrapper.style.fontFamily = 'Inter, sans-serif';
 
                 const pnlClone = pnlEl.cloneNode(true);
                 pnlClone.querySelectorAll('.no-print').forEach(el => el.remove());
+                pnlClone.style.padding = '12px';
+                pnlClone.style.border = 'none';
 
                 const bsClone = bsEl.cloneNode(true);
                 bsClone.querySelectorAll('.no-print').forEach(el => el.remove());
-                bsClone.style.marginTop = '24px';
+                bsClone.style.padding = '12px';
+                bsClone.style.border = 'none';
                 bsClone.style.pageBreakBefore = 'always';
 
                 wrapper.appendChild(pnlClone);
@@ -2095,21 +2325,35 @@ function doGet(e) {
                 const filename = `${safeBizName}_Penyata_Kewangan_${appState.financialYear}.pdf`;
 
                 if (typeof html2pdf !== 'undefined') {
-                    await html2pdf()
+                    const pdfBlob = await html2pdf()
                         .set({
-                            margin: 10,
+                            margin: 8,
                             filename: filename,
                             image: { type: 'jpeg', quality: 0.98 },
                             html2canvas: { scale: 2, useCORS: true },
                             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                         })
                         .from(wrapper)
-                        .save();
+                        .output('blob');
+
+                    const blobUrl = URL.createObjectURL(pdfBlob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = blobUrl;
+                    downloadLink.download = filename;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(downloadLink);
+                        URL.revokeObjectURL(blobUrl);
+                    }, 1000);
+
                     showToast('Fail PDF Penyata Kewangan berjaya dimuat turun!');
                 } else {
                     window.print();
                 }
             } catch (err) {
+                console.error(err);
                 window.print();
             } finally {
                 if (btn) {
