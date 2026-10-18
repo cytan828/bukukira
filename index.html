@@ -1718,12 +1718,18 @@
             setBS('bsCarriedForward', stats.carriedForward);
             setBS('bsTotalLiabilitiesAndEquity', stats.totalLiabilitiesAndEquity);
 
-            const isBalanced = Math.abs(stats.totalAssets - stats.totalLiabilitiesAndEquity) < 0.01;
-            document.getElementById('bsCheckAmount').textContent = isBalanced
-                ? `SEIMBANG (${formatMoney(stats.totalAssets)})`
-                : formatMoney(stats.totalLiabilitiesAndEquity);
-        }
+const difference = stats.totalAssets - stats.totalLiabilitiesAndEquity;
+const isBalanced = Math.abs(difference) < 0.01;
+const bsCheckElement = document.getElementById('bsCheckAmount');
 
+if (isBalanced) {
+    bsCheckElement.textContent = `SEIMBANG (${formatMoney(stats.totalAssets)})`;
+    bsCheckElement.style.color = 'green'; // Or use classList.add('text-success')
+} else {
+    // Displays Assets, Liabilities & Equity, and the absolute difference
+    bsCheckElement.textContent = `TIDAK SEIMBANG (Aset: ${formatMoney(stats.totalAssets)} | L&E: ${formatMoney(stats.totalLiabilitiesAndEquity)} | Beza: ${formatMoney(Math.abs(difference))})`;
+    bsCheckElement.style.color = 'red'; // Or use classList.add('text-danger')
+}
         let currentCreditType = 'CREDIT_SALE';
 
         function openCreditForm(type) {
