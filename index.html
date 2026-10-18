@@ -1719,14 +1719,22 @@
             setBS('bsTotalLiabilitiesAndEquity', stats.totalLiabilitiesAndEquity);
 
 const isBalanced = Math.abs(stats.totalAssets - stats.totalLiabilitiesAndEquity) < 0.01;
+const bsCheckElement = document.getElementById('bsCheckAmount');
 
-document.getElementById('bsCheckAmount').textContent = isBalanced
-
-? `SEIMBANG (${formatMoney(stats.totalAssets)})`
-
-: formatMoney(stats.totalLiabilitiesAndEquity);
-
+// Only update the DOM if the element actually exists
+if (bsCheckElement) {
+    if (isBalanced) {
+        bsCheckElement.textContent = `SEIMBANG (${formatMoney(stats.totalAssets)})`;
+        bsCheckElement.style.color = 'green'; 
+    } else {
+        const difference = Math.abs(stats.totalAssets - stats.totalLiabilitiesAndEquity);
+        bsCheckElement.textContent = `TIDAK SEIMBANG (Aset: ${formatMoney(stats.totalAssets)} | L&E: ${formatMoney(stats.totalLiabilitiesAndEquity)} | Beza: ${formatMoney(difference)})`;
+        bsCheckElement.style.color = 'red';
+    }
+} else {
+    console.warn("Element 'bsCheckAmount' not found in the DOM.");
 }
+            
         let currentCreditType = 'CREDIT_SALE';
 
         function openCreditForm(type) {
